@@ -1,0 +1,7 @@
+.env.testing
+.env.local
+.env 
+/.idea
+.vscode
+bin/
+main
