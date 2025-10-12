@@ -42,16 +42,24 @@ func (h *account) Create(ctx echo.Context) error {
 	var request dto.CreateAccountRequest
 
 	if err := ctx.Bind(&request); err != nil {
-		return echo.NewHTTPError(http.StatusBadRequest, err)
+		return echo.NewHTTPError(http.StatusBadRequest, "invalid request payload: "+err.Error())
 	}
 
 	if err := request.Validate(); err != nil {
-		return echo.NewHTTPError(http.StatusBadRequest, err)
+		return echo.NewHTTPError(http.StatusBadRequest, "validation failed: "+err.Error())
 	}
 
 	account, err := h.accountApp.Create(ctx.Request().Context(), request)
 	if err != nil {
-		return err
+		switch {
+		case errors.Is(err, ierr.ErrConflict):
+			return echo.NewHTTPError(http.StatusConflict, err.Error())
+		case errors.Is(err, ierr.ErrNotFound):
+			return echo.NewHTTPError(http.StatusNotFound, err.Error())
+		default:
+			slog.Error("error creating account", "error", err)
+			return echo.NewHTTPError(http.StatusInternalServerError, "an unexpected error occurred")
+		}
 	}
 
 	return ctx.JSON(http.StatusCreated, account)
@@ -67,7 +75,7 @@ func (h *account) FindByID(ctx echo.Context) error {
 	if err != nil {
 		slog.Error("error finding account by ID", "error", err)
 		if errors.Is(err, ierr.ErrNotFound) {
-			return echo.NewHTTPError(http.StatusNotFound, ierr.ErrNotFound) // retun 404 para "not found"
+			return echo.NewHTTPError(http.StatusNotFound, ierr.ErrNotFound) // retun 404 for "not found"
 		}
 		return echo.NewHTTPError(http.StatusInternalServerError, "an unexpected error occurred")
 	}
@@ -122,7 +130,13 @@ func (h *account) Update(ctx echo.Context) error {
 
 	updatedAccount, err := h.accountApp.Update(ctx.Request().Context(), id, request)
 	if err != nil {
-		return err
+		switch {
+		case errors.Is(err, ierr.ErrNotFound):
+			return echo.NewHTTPError(http.StatusNotFound, err.Error())
+		default:
+			slog.Error("error updating account", "error", err)
+			return echo.NewHTTPError(http.StatusInternalServerError, "an unexpected error occurred")
+		}
 	}
 
 	return ctx.JSON(http.StatusOK, updatedAccount)

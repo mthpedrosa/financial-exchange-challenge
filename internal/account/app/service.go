@@ -2,11 +2,11 @@ package app
 
 import (
 	"context"
-	"errors"
 
 	"github.com/mthpedrosa/financial-exchange-challenge/internal/account/domain/dto"
 	"github.com/mthpedrosa/financial-exchange-challenge/internal/account/domain/entity"
 	"github.com/mthpedrosa/financial-exchange-challenge/internal/account/domain/port"
+	"github.com/mthpedrosa/financial-exchange-challenge/pkg/ierr"
 )
 
 type Account interface {
@@ -39,7 +39,7 @@ func (a *account) Create(ctx context.Context, request dto.CreateAccountRequest) 
 	}
 
 	if len(existingAccounts) > 0 {
-		return dto.CreateAcountResponse{}, errors.New("email already in use")
+		return dto.CreateAcountResponse{}, ierr.ErrConflict
 	}
 
 	entityAccount.ID, err = a.accountPort.Create(ctx, *entityAccount)
