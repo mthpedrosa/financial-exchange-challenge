@@ -18,6 +18,11 @@ cover:
 	gocov coverage.txt
 	rm coverage.txt
 
+.PHONY: mocks
+mocks:
+	rm -rf ./mocks
+	mockery --all --dir ./internal/account --disable-version-string --case snake --keeptree
+
 # Makefile
 migrate-create:
 	@read -p "Enter migration name: " name; \
