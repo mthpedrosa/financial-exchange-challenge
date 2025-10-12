@@ -2,11 +2,14 @@ package repository
 
 import (
 	"context"
+	"errors"
 	"fmt"
 
+	"github.com/jackc/pgx/v5"
 	"github.com/jackc/pgx/v5/pgxpool"
 	"github.com/mthpedrosa/financial-exchange-challenge/internal/account/domain/entity"
 	"github.com/mthpedrosa/financial-exchange-challenge/internal/account/domain/port"
+	"github.com/mthpedrosa/financial-exchange-challenge/pkg/ierr"
 )
 
 type account struct {
@@ -35,16 +38,25 @@ func (r *account) Create(ctx context.Context, account entity.Account) (string, e
 	return id, nil
 }
 
-func (r *account) FindByID(ctx context.Context, email string) (entity.Account, error) {
-	var model AccountModel
+func (r *account) FindByID(ctx context.Context, id string) (entity.Account, error) {
+	query := `SELECT id, name, email, created_at, updated_at FROM accounts WHERE id = $1`
 
-	query := `SELECT id, name, email, created_at, updated_at FROM accounts WHERE id=$1`
-	err := r.db.QueryRow(ctx, query, email).Scan(&model.ID, &model.Name, &model.Email, &model.CreatedAt, &model.UpdatedAt)
+	var acc entity.Account
+	err := r.db.QueryRow(ctx, query, id).Scan(
+		&acc.ID,
+		&acc.Name,
+		&acc.Email,
+		&acc.CreatedAt,
+		&acc.UpdatedAt,
+	)
 	if err != nil {
+		if errors.Is(err, pgx.ErrNoRows) {
+			return entity.Account{}, ierr.ErrNotFound
+		}
 		return entity.Account{}, err
 	}
 
-	return ToEntity(model), nil
+	return acc, nil
 }
 
 func (r *account) GetAccounts(ctx context.Context, filters entity.AccountFilter) ([]entity.Account, error) {

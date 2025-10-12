@@ -10,6 +10,7 @@ import (
 	"syscall"
 	"time"
 
+	_ "github.com/golang-migrate/migrate/v4/database/postgres"
 	"github.com/jackc/pgx/v5/pgxpool"
 	"github.com/labstack/echo/v4"
 	"github.com/labstack/echo/v4/middleware"
@@ -17,6 +18,7 @@ import (
 	accountHandler "github.com/mthpedrosa/financial-exchange-challenge/internal/account/adapters/api"
 	accountRepo "github.com/mthpedrosa/financial-exchange-challenge/internal/account/adapters/repository"
 	accountApp "github.com/mthpedrosa/financial-exchange-challenge/internal/account/app"
+	"github.com/mthpedrosa/financial-exchange-challenge/internal/db"
 	"github.com/mthpedrosa/financial-exchange-challenge/internal/logger"
 )
 
@@ -27,6 +29,9 @@ func main() {
 	// setup logger based on cfg.LogLevel
 	log := logger.New(cfg.LogLevel, cfg.AppName, cfg.AppEnv)
 	slog.SetDefault(log)
+
+	// migrations
+	db.RunMigrations(cfg.DatabaseURL)
 
 	// postgres connection
 	db, err := pgxpool.New(context.Background(), cfg.DatabaseURL)

@@ -1,11 +1,14 @@
 package api
 
 import (
+	"errors"
+	"log/slog"
 	"net/http"
 
 	"github.com/labstack/echo/v4"
 	"github.com/mthpedrosa/financial-exchange-challenge/internal/account/app"
 	"github.com/mthpedrosa/financial-exchange-challenge/internal/account/domain/dto"
+	"github.com/mthpedrosa/financial-exchange-challenge/pkg/ierr"
 )
 
 type Account interface {
@@ -55,22 +58,21 @@ func (h *account) Create(ctx echo.Context) error {
 }
 
 func (h *account) FindByID(ctx echo.Context) error {
-	var request dto.CreateAccountRequest
-
-	if err := ctx.Bind(&request); err != nil {
-		return echo.NewHTTPError(http.StatusBadRequest, err)
+	id := ctx.Param("id")
+	if id == "" {
+		return echo.NewHTTPError(http.StatusBadRequest, "account ID cannot be empty")
 	}
 
-	if err := request.Validate(); err != nil {
-		return echo.NewHTTPError(http.StatusBadRequest, err)
-	}
-
-	account, err := h.accountApp.Create(ctx.Request().Context(), request)
+	account, err := h.accountApp.FindByID(ctx.Request().Context(), id)
 	if err != nil {
-		return err
+		slog.Error("error finding account by ID", "error", err)
+		if errors.Is(err, ierr.ErrNotFound) {
+			return echo.NewHTTPError(http.StatusNotFound, ierr.ErrNotFound) // retun 404 para "not found"
+		}
+		return echo.NewHTTPError(http.StatusInternalServerError, "an unexpected error occurred")
 	}
 
-	return ctx.JSON(http.StatusCreated, account)
+	return ctx.JSON(http.StatusOK, account)
 }
 
 func (h *account) GetAccounts(ctx echo.Context) error {

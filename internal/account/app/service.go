@@ -2,6 +2,7 @@ package app
 
 import (
 	"context"
+	"errors"
 
 	"github.com/mthpedrosa/financial-exchange-challenge/internal/account/domain/dto"
 	"github.com/mthpedrosa/financial-exchange-challenge/internal/account/domain/entity"
@@ -32,19 +33,18 @@ func (a *account) Create(ctx context.Context, request dto.CreateAccountRequest) 
 		return dto.CreateAcountResponse{}, err
 	}
 
-	account, err := a.accountPort.GetAccounts(ctx, entity.AccountFilter{Email: entityAccount.Email})
+	existingAccounts, err := a.accountPort.GetAccounts(ctx, entity.AccountFilter{Email: entityAccount.Email})
 	if err != nil {
 		return dto.CreateAcountResponse{}, err
 	}
 
-	if len(account) == 0 && account[0].IsExisting() {
-		return dto.CreateAcountResponse{}, nil
+	if len(existingAccounts) > 0 {
+		return dto.CreateAcountResponse{}, errors.New("email already in use")
 	}
 
 	entityAccount.ID, err = a.accountPort.Create(ctx, *entityAccount)
 	if err != nil {
 		return dto.CreateAcountResponse{}, err
-
 	}
 
 	return dto.CreateAcountResponse{ID: entityAccount.ID}, nil
