@@ -10,6 +10,7 @@ import (
 
 type Config struct {
 	AppEnv      string `mapstructure:"APP_ENV"      validate:"required,oneof=development production"`
+	AppName     string `mapstructure:"APP_NAME"     validate:"required"`
 	Port        string `mapstructure:"PORT"         validate:"required"`
 	LogLevel    string `mapstructure:"LOG_LEVEL"    validate:"required"`
 	DatabaseURL string `mapstructure:"DATABASE_URL" validate:"required"`
@@ -30,6 +31,7 @@ func LoadConfig() Config {
 		LogLevel:    os.Getenv("LOG_LEVEL"),
 		RabbitURL:   os.Getenv("RABBITMQ_URL"),
 		JWTSecret:   os.Getenv("JWT_SECRET"),
+		AppName:     getEnv("APP_NAME", "Exchange API"),
 	}
 
 	validate := validator.New()
