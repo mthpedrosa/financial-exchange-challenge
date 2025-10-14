@@ -34,7 +34,7 @@ type AccountFilter struct {
 	Email string `json:"email,omitempty"`
 }
 
-type CreateAcountResponse struct {
+type CreateAccountResponse struct {
 	ID string `json:"id"`
 }
 

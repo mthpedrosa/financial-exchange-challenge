@@ -28,6 +28,7 @@ import (
 	balanceRepo "github.com/mthpedrosa/financial-exchange-challenge/internal/balance/adapters/repository"
 	balanceApp "github.com/mthpedrosa/financial-exchange-challenge/internal/balance/app"
 
+	_ "github.com/mthpedrosa/financial-exchange-challenge/docs"
 	"github.com/mthpedrosa/financial-exchange-challenge/internal/logger"
 	orderHandler "github.com/mthpedrosa/financial-exchange-challenge/internal/order/adapters/api"
 	orderRepo "github.com/mthpedrosa/financial-exchange-challenge/internal/order/adapters/repository"
@@ -35,6 +36,16 @@ import (
 	amqp "github.com/rabbitmq/amqp091-go"
 )
 
+// @title           Financial Exchange Challenge API
+// @version         1.0
+// @description     Esta é a documentação da API para o desafio.
+// @termsOfService  http://swagger.io/terms/
+
+// @license.name  Apache 2.0
+// @license.url   http://www.apache.org/licenses/LICENSE-2.0.html
+
+// @host      localhost:8080
+// @BasePath  /v1
 func main() {
 	// load config
 	cfg := config.LoadConfig()

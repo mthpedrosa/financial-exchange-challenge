@@ -45,9 +45,9 @@ func (h *account) RegisterRoutes(g *echo.Group) {
 // @Accept       json
 // @Produce      json
 // @Param        account  body      dto.CreateAccountRequest  true  "Account"
-// @Success      201    {object}  dto.CreateAcountResponse
-// @Failure      400    {object}  map[string]string
-// @Failure      409    {object}  map[string]string
+// @Success      201    {object}  dto.CreateAccountResponse
+// @Failure      400    {object}  map[string]string "invalid request payload"
+// @Failure      409    {object}  map[string]string "record already exists or causes a conflict"
 // @Router       /v1/accounts [post]
 func (h *account) Create(ctx echo.Context) error {
 	var request dto.CreateAccountRequest
@@ -82,7 +82,8 @@ func (h *account) Create(ctx echo.Context) error {
 // @Produce      json
 // @Param        id   path      string  true  "Account ID"
 // @Success      200  {object}  dto.AccountDTO
-// @Failure      404  {object}  map[string]string
+// @Failure 	 400 {object} map[string]string "ID cannot be empty"
+// @Failure      404  {object}  map[string]string "record not found"
 // @Router       /v1/accounts/{id} [get]
 func (h *account) FindByID(ctx echo.Context) error {
 	id := ctx.Param("id")
@@ -133,7 +134,8 @@ func (h *account) GetAccounts(ctx echo.Context) error {
 // @Produce      json
 // @Param        id   path      string  true  "Account ID"
 // @Success      204  "No Content"
-// @Failure      404  {object}  map[string]string
+// @Failure 	 400 {object} map[string]string "ID cannot be empty"
+// @Failure      404  {object}  map[string]string "record not found"
 // @Router       /v1/accounts/{id} [delete]
 func (h *account) DeleteByID(ctx echo.Context) error {
 	id := ctx.Param("id")
@@ -156,8 +158,8 @@ func (h *account) DeleteByID(ctx echo.Context) error {
 // @Param        id      path      string                   true  "Account ID"
 // @Param        account body      dto.UpdateAccountRequest true  "Account"
 // @Success      200  {object}  dto.AccountListDTO
-// @Failure      400  {object}  map[string]string
-// @Failure      404  {object}  map[string]string
+// @Failure      400 {object}   map[string]string "ID cannot be empty"
+// @Failure      404  {object}  map[string]string "record not found"
 // @Router       /v1/accounts/{id} [put]
 func (h *account) Update(ctx echo.Context) error {
 	id := ctx.Param("id")
