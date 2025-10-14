@@ -12,9 +12,9 @@ import (
 
 type Instrument interface {
 	Create(ctx context.Context, request dto.CreateInstrumentRequest) (string, error)
-	FindByID(ctx context.Context, id string) (*entity.Instrument, error)
+	FindByID(ctx context.Context, id string) (dto.InstrumentDTO, error)
 	GetInstruments(ctx context.Context, filter dto.InstrumentFilter) ([]*entity.Instrument, error)
-	Update(ctx context.Context, id string, request dto.CreateInstrumentRequest) (*entity.Instrument, error)
+	Update(ctx context.Context, id string, request dto.CreateInstrumentRequest) (dto.InstrumentDTO, error)
 	DeleteByID(ctx context.Context, id string) error
 }
 
@@ -52,8 +52,13 @@ func (i *instrument) Create(ctx context.Context, request dto.CreateInstrumentReq
 	return createdInstrumentID, nil
 }
 
-func (i *instrument) FindByID(ctx context.Context, id string) (*entity.Instrument, error) {
-	return i.instrumentPort.FindByID(ctx, id)
+func (i *instrument) FindByID(ctx context.Context, id string) (dto.InstrumentDTO, error) {
+	isntrument, err := i.instrumentPort.FindByID(ctx, id)
+	if err != nil {
+		return dto.InstrumentDTO{}, err
+	}
+
+	return isntrument.ToDTO(), nil
 }
 
 func (i *instrument) GetInstruments(ctx context.Context, filter dto.InstrumentFilter) ([]*entity.Instrument, error) {
@@ -68,11 +73,11 @@ func (i *instrument) DeleteByID(ctx context.Context, id string) error {
 	return i.instrumentPort.DeleteByID(ctx, id)
 }
 
-func (i *instrument) Update(ctx context.Context, id string, request dto.CreateInstrumentRequest) (*entity.Instrument, error) {
+func (i *instrument) Update(ctx context.Context, id string, request dto.CreateInstrumentRequest) (dto.InstrumentDTO, error) {
 	// check duplicate
 	instrumentToUpdate, err := i.instrumentPort.FindByID(ctx, id)
 	if err != nil {
-		return nil, err
+		return dto.InstrumentDTO{}, err
 	}
 
 	// update fields
@@ -80,8 +85,8 @@ func (i *instrument) Update(ctx context.Context, id string, request dto.CreateIn
 	instrumentToUpdate.QuoteAsset = request.QuoteAsset
 
 	if err := i.instrumentPort.Update(ctx, instrumentToUpdate); err != nil {
-		return nil, err
+		return dto.InstrumentDTO{}, err
 	}
 
-	return instrumentToUpdate, nil
+	return instrumentToUpdate.ToDTO(), nil
 }

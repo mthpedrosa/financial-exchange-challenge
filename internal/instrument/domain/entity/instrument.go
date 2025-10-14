@@ -18,6 +18,16 @@ type InstrumentFilter struct {
 	QuoteAsset string `json:"quote_asset"`
 }
 
+func (i *Instrument) ToDTO() dto.InstrumentDTO {
+	return dto.InstrumentDTO{
+		ID:         i.ID,
+		BaseAsset:  i.BaseAsset,
+		QuoteAsset: i.QuoteAsset,
+		CreatedAt:  i.CreatedAt,
+		UpdatedAt:  i.UpdatedAt,
+	}
+}
+
 func ToEntity(dto dto.CreateInstrumentRequest) (*Instrument, error) {
 	if err := dto.Validate(); err != nil {
 		return nil, err

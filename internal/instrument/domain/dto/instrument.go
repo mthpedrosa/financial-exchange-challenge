@@ -1,8 +1,18 @@
 package dto
 
 import (
+	"time"
+
 	"github.com/go-playground/validator/v10"
 )
+
+type InstrumentDTO struct {
+	ID         string    `json:"id"`
+	BaseAsset  string    `json:"base_asset"`
+	QuoteAsset string    `json:"quote_asset"`
+	CreatedAt  time.Time `json:"created_at"`
+	UpdatedAt  time.Time `json:"updated_at"`
+}
 
 type CreateInstrumentRequest struct {
 	BaseAsset  string `json:"base_asset" validate:"required"`
