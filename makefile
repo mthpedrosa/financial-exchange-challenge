@@ -20,9 +20,12 @@ cover:
 
 .PHONY: mocks
 mocks:
-	rm -rf ./mocks
-	mockery --all --dir ./internal/account --disable-version-string --case snake --keeptree
-
+	rm -fr ./mocks
+	mockery --all --dir ./internal --disable-version-string --case snake --keeptree
+	
+.PHONY: swag
+swag:
+	swag init -g cmd/main.go -o docs
 # Makefile
 migrate-create:
 	@read -p "Enter migration name: " name; \

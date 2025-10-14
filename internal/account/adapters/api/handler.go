@@ -38,6 +38,17 @@ func (h *account) RegisterRoutes(g *echo.Group) {
 	g.PUT("/:id", h.Update)
 }
 
+// Create godoc
+// @Summary      Cria uma nova conta
+// @Description  Cria uma nova conta de usuário
+// @Tags         accounts
+// @Accept       json
+// @Produce      json
+// @Param        account  body      dto.CreateAccountRequest  true  "Account"
+// @Success      201    {object}  dto.AccountDTO
+// @Failure      400    {object}  map[string]string
+// @Failure      409    {object}  map[string]string
+// @Router       /v1/accounts [post]
 func (h *account) Create(ctx echo.Context) error {
 	var request dto.CreateAccountRequest
 
@@ -65,6 +76,14 @@ func (h *account) Create(ctx echo.Context) error {
 	return ctx.JSON(http.StatusCreated, account)
 }
 
+// FindByID godoc
+// @Summary      Busca uma conta por ID
+// @Tags         accounts
+// @Produce      json
+// @Param        id   path      string  true  "Account ID"
+// @Success      200  {object}  dto.AccountDTO
+// @Failure      404  {object}  map[string]string
+// @Router       /v1/accounts/{id} [get]
 func (h *account) FindByID(ctx echo.Context) error {
 	id := ctx.Param("id")
 	if id == "" {
@@ -83,6 +102,14 @@ func (h *account) FindByID(ctx echo.Context) error {
 	return ctx.JSON(http.StatusOK, account)
 }
 
+// GetAccounts godoc
+// @Summary      Lista contas
+// @Tags         accounts
+// @Produce      json
+// @Param        email  query   string  false  "Email"
+// @Param        name   query   string  false  "Name"
+// @Success      200  {array}  dto.AccountDTO
+// @Router       /v1/accounts [get]
 func (h *account) GetAccounts(ctx echo.Context) error {
 	email := ctx.QueryParam("email")
 	name := ctx.QueryParam("name")
@@ -100,6 +127,14 @@ func (h *account) GetAccounts(ctx echo.Context) error {
 	return ctx.JSON(http.StatusOK, accounts)
 }
 
+// DeleteByID godoc
+// @Summary      Deleta uma conta
+// @Tags         accounts
+// @Produce      json
+// @Param        id   path      string  true  "Account ID"
+// @Success      204  "No Content"
+// @Failure      404  {object}  map[string]string
+// @Router       /v1/accounts/{id} [delete]
 func (h *account) DeleteByID(ctx echo.Context) error {
 	id := ctx.Param("id")
 	if id == "" {
@@ -113,6 +148,17 @@ func (h *account) DeleteByID(ctx echo.Context) error {
 	return ctx.NoContent(http.StatusOK)
 }
 
+// Update godoc
+// @Summary      Atualiza uma conta
+// @Tags         accounts
+// @Accept       json
+// @Produce      json
+// @Param        id      path      string                   true  "Account ID"
+// @Param        account body      dto.UpdateAccountRequest true  "Account"
+// @Success      200  {object}  dto.AccountDTO
+// @Failure      400  {object}  map[string]string
+// @Failure      404  {object}  map[string]string
+// @Router       /v1/accounts/{id} [put]
 func (h *account) Update(ctx echo.Context) error {
 	id := ctx.Param("id")
 	if id == "" {

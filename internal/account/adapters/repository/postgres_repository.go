@@ -23,14 +23,11 @@ func NewAccountRepository(db *pgxpool.Pool) port.AccountRepository {
 }
 
 func (r *account) Create(ctx context.Context, account entity.Account) (string, error) {
-	// Supondo que ToModel converte a entidade para um modelo de DB
-	// e que o modelo tem os mesmos campos Name e Email.
 	model := ToModel(account)
 
 	query := `INSERT INTO accounts (name, email, created_at, updated_at) VALUES ($1, $2, NOW(), NOW()) RETURNING id`
 	var id string
 
-	// Usando os campos do 'model' (ou do 'account' se não houver transformação)
 	err := r.db.QueryRow(ctx, query, model.Name, model.Email).Scan(&id)
 	if err != nil {
 		return "", err
