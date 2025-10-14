@@ -13,10 +13,10 @@ import (
 
 type Account interface {
 	Create(context echo.Context) error
-	GetAccounts(context echo.Context) error
-	FindByID(context echo.Context) error
-	DeleteByID(context echo.Context) error
 	Update(context echo.Context) error
+	FindByID(context echo.Context) error
+	GetAccounts(context echo.Context) error
+	DeleteByID(context echo.Context) error
 	RegisterRoutes(g *echo.Group)
 }
 
@@ -74,6 +74,46 @@ func (h *account) Create(ctx echo.Context) error {
 	}
 
 	return ctx.JSON(http.StatusCreated, account)
+}
+
+// Update godoc
+// @Summary      Atualiza uma conta
+// @Tags         accounts
+// @Accept       json
+// @Produce      json
+// @Param        id      path      string                   true  "Account ID"
+// @Param        account body      dto.UpdateAccountRequest true  "Account"
+// @Success      200  {object}  dto.AccountListDTO
+// @Failure      400 {object}   map[string]string "ID cannot be empty"
+// @Failure      404  {object}  map[string]string "record not found"
+// @Router       /v1/accounts/{id} [put]
+func (h *account) Update(ctx echo.Context) error {
+	id := ctx.Param("id")
+	if id == "" {
+		return echo.NewHTTPError(http.StatusBadRequest, "id cannot be empty")
+	}
+
+	var request dto.UpdateAccountRequest
+	if err := ctx.Bind(&request); err != nil {
+		return echo.NewHTTPError(http.StatusBadRequest, err)
+	}
+
+	if err := request.Validate(); err != nil {
+		return echo.NewHTTPError(http.StatusBadRequest, err)
+	}
+
+	updatedAccount, err := h.accountApp.Update(ctx.Request().Context(), id, request)
+	if err != nil {
+		switch {
+		case errors.Is(err, ierr.ErrNotFound):
+			return echo.NewHTTPError(http.StatusNotFound, err.Error())
+		default:
+			slog.Error("error updating account", "error", err)
+			return echo.NewHTTPError(http.StatusInternalServerError, "an unexpected error occurred")
+		}
+	}
+
+	return ctx.JSON(http.StatusOK, updatedAccount)
 }
 
 // FindByID godoc
@@ -148,44 +188,4 @@ func (h *account) DeleteByID(ctx echo.Context) error {
 	}
 
 	return ctx.NoContent(http.StatusOK)
-}
-
-// Update godoc
-// @Summary      Atualiza uma conta
-// @Tags         accounts
-// @Accept       json
-// @Produce      json
-// @Param        id      path      string                   true  "Account ID"
-// @Param        account body      dto.UpdateAccountRequest true  "Account"
-// @Success      200  {object}  dto.AccountListDTO
-// @Failure      400 {object}   map[string]string "ID cannot be empty"
-// @Failure      404  {object}  map[string]string "record not found"
-// @Router       /v1/accounts/{id} [put]
-func (h *account) Update(ctx echo.Context) error {
-	id := ctx.Param("id")
-	if id == "" {
-		return echo.NewHTTPError(http.StatusBadRequest, "id cannot be empty")
-	}
-
-	var request dto.UpdateAccountRequest
-	if err := ctx.Bind(&request); err != nil {
-		return echo.NewHTTPError(http.StatusBadRequest, err)
-	}
-
-	if err := request.Validate(); err != nil {
-		return echo.NewHTTPError(http.StatusBadRequest, err)
-	}
-
-	updatedAccount, err := h.accountApp.Update(ctx.Request().Context(), id, request)
-	if err != nil {
-		switch {
-		case errors.Is(err, ierr.ErrNotFound):
-			return echo.NewHTTPError(http.StatusNotFound, err.Error())
-		default:
-			slog.Error("error updating account", "error", err)
-			return echo.NewHTTPError(http.StatusInternalServerError, "an unexpected error occurred")
-		}
-	}
-
-	return ctx.JSON(http.StatusOK, updatedAccount)
 }

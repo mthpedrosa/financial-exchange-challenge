@@ -13,10 +13,11 @@ import (
 
 type Order interface {
 	Create(ctx echo.Context) error
-	FindByID(ctx echo.Context) error
-	GetAll(ctx echo.Context) error
 	Update(ctx echo.Context) error
+	FindByID(ctx echo.Context) error
+	GetOrders(ctx echo.Context) error
 	CancelByID(ctx echo.Context) error
+	FindByInstrument(ctx echo.Context) error
 	RegisterRoutes(g *echo.Group)
 }
 
@@ -33,9 +34,10 @@ func NewOrderHandler(orderApp app.Order) Order {
 func (h *order) RegisterRoutes(g *echo.Group) {
 	g.POST("", h.Create)
 	g.GET("/:id", h.FindByID)
-	g.GET("", h.GetAll)
+	g.GET("", h.GetOrders)
 	g.PUT("/:id", h.Update)
 	g.POST("/:id/cancel", h.CancelByID)
+	g.GET("/instrument/:instrument_id", h.FindByInstrument)
 }
 
 // Create godoc
@@ -74,46 +76,6 @@ func (h *order) Create(ctx echo.Context) error {
 	}
 
 	return ctx.JSON(http.StatusCreated, order)
-}
-
-// FindByID godoc
-// @Summary      Busca uma ordem por ID
-// @Tags         orders
-// @Produce      json
-// @Param        id   path      string  true  "Order ID"
-// @Success      200  {object}  dto.OrderDTO
-// @Failure      404  {object}  map[string]string
-// @Router       /v1/orders/{id} [get]
-func (h *order) FindByID(ctx echo.Context) error {
-	id := ctx.Param("id")
-	if id == "" {
-		return echo.NewHTTPError(http.StatusBadRequest, "order ID cannot be empty")
-	}
-
-	order, err := h.orderApp.FindByID(ctx.Request().Context(), id)
-	if err != nil {
-		slog.Error("error finding order by ID", "error", err)
-		if errors.Is(err, ierr.ErrNotFound) {
-			return echo.NewHTTPError(http.StatusNotFound, ierr.ErrNotFound)
-		}
-		return echo.NewHTTPError(http.StatusInternalServerError, "an unexpected error occurred")
-	}
-
-	return ctx.JSON(http.StatusOK, order)
-}
-
-// GetAll godoc
-// @Summary      Lista todas as ordens
-// @Tags         orders
-// @Produce      json
-// @Success      200  {array}   dto.OrderDTO
-// @Router       /v1/orders [get]
-func (h *order) GetAll(ctx echo.Context) error {
-	orders, err := h.orderApp.GetAll(ctx.Request().Context())
-	if err != nil {
-		return echo.NewHTTPError(http.StatusInternalServerError, "an unexpected error occurred")
-	}
-	return ctx.JSON(http.StatusOK, orders)
 }
 
 // Update godoc
@@ -156,6 +118,46 @@ func (h *order) Update(ctx echo.Context) error {
 	return ctx.NoContent(http.StatusNoContent)
 }
 
+// FindByID godoc
+// @Summary      Busca uma ordem por ID
+// @Tags         orders
+// @Produce      json
+// @Param        id   path      string  true  "Order ID"
+// @Success      200  {object}  dto.OrderDTO
+// @Failure      404  {object}  map[string]string
+// @Router       /v1/orders/{id} [get]
+func (h *order) FindByID(ctx echo.Context) error {
+	id := ctx.Param("id")
+	if id == "" {
+		return echo.NewHTTPError(http.StatusBadRequest, "order ID cannot be empty")
+	}
+
+	order, err := h.orderApp.FindByID(ctx.Request().Context(), id)
+	if err != nil {
+		slog.Error("error finding order by ID", "error", err)
+		if errors.Is(err, ierr.ErrNotFound) {
+			return echo.NewHTTPError(http.StatusNotFound, ierr.ErrNotFound)
+		}
+		return echo.NewHTTPError(http.StatusInternalServerError, "an unexpected error occurred")
+	}
+
+	return ctx.JSON(http.StatusOK, order)
+}
+
+// GetOrders godoc
+// @Summary      Lista todas as ordens
+// @Tags         orders
+// @Produce      json
+// @Success      200  {array}   dto.OrderDTO
+// @Router       /v1/orders [get]
+func (h *order) GetOrders(ctx echo.Context) error {
+	orders, err := h.orderApp.GetAll(ctx.Request().Context())
+	if err != nil {
+		return echo.NewHTTPError(http.StatusInternalServerError, "an unexpected error occurred")
+	}
+	return ctx.JSON(http.StatusOK, orders)
+}
+
 // CancelByID godoc
 // @Summary      Cancela uma ordem
 // @Tags         orders
@@ -181,4 +183,31 @@ func (h *order) CancelByID(ctx echo.Context) error {
 	}
 
 	return ctx.NoContent(http.StatusNoContent)
+}
+
+// FindByInstrument godoc
+// @Summary      Busca as orders por um Intrument
+// @Tags         orders
+// @Produce      json
+// @Param        instrument_id   path   string  true  "Instrument ID"
+// @Param        asset        path   string  true  "Asset"
+// @Success      200  {array}   dto.OrderDTO
+// @Failure      404  {message}  map[string]string "instrumentID required"
+// @Router       /v1/orders/instrument/{instrumentID} [get]
+func (h *order) FindByInstrument(ctx echo.Context) error {
+	instrumentID := ctx.Param("instrument_id")
+	if instrumentID == "" {
+		return echo.NewHTTPError(http.StatusBadRequest, "instrumentID are required")
+	}
+
+	balance, err := h.orderApp.FindByInstrument(ctx.Request().Context(), instrumentID)
+	if err != nil {
+		slog.Error("error finding orders by instrument", "error", err)
+		if errors.Is(err, ierr.ErrNotFound) {
+			return echo.NewHTTPError(http.StatusNotFound, ierr.ErrNotFound)
+		}
+		return echo.NewHTTPError(http.StatusInternalServerError, "an unexpected error occurred")
+	}
+
+	return ctx.JSON(http.StatusOK, balance)
 }

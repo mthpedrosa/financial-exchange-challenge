@@ -492,10 +492,7 @@ const docTemplate = `{
                     "404": {
                         "description": "record not found",
                         "schema": {
-                            "type": "object",
-                            "additionalProperties": {
-                                "type": "string"
-                            }
+                            "type": "message"
                         }
                     }
                 }
@@ -563,7 +560,7 @@ const docTemplate = `{
                     "201": {
                         "description": "Created",
                         "schema": {
-                            "$ref": "#/definitions/github_com_mthpedrosa_financial-exchange-challenge_internal_instrument_domain_dto.InstrumentDTO"
+                            "$ref": "#/definitions/github_com_mthpedrosa_financial-exchange-challenge_internal_instrument_domain_dto.CreateInstrumentResponse"
                         }
                     },
                     "400": {
@@ -788,6 +785,50 @@ const docTemplate = `{
                             "additionalProperties": {
                                 "type": "string"
                             }
+                        }
+                    }
+                }
+            }
+        },
+        "/v1/orders/instrument/{instrumentID}": {
+            "get": {
+                "produces": [
+                    "application/json"
+                ],
+                "tags": [
+                    "orders"
+                ],
+                "summary": "Busca as orders por um Intrument",
+                "parameters": [
+                    {
+                        "type": "string",
+                        "description": "Instrument ID",
+                        "name": "instrument_id",
+                        "in": "path",
+                        "required": true
+                    },
+                    {
+                        "type": "string",
+                        "description": "Asset",
+                        "name": "asset",
+                        "in": "path",
+                        "required": true
+                    }
+                ],
+                "responses": {
+                    "200": {
+                        "description": "OK",
+                        "schema": {
+                            "type": "array",
+                            "items": {
+                                "$ref": "#/definitions/github_com_mthpedrosa_financial-exchange-challenge_internal_order_domain_dto.OrderDTO"
+                            }
+                        }
+                    },
+                    "404": {
+                        "description": "instrumentID required",
+                        "schema": {
+                            "type": "message"
                         }
                     }
                 }
@@ -1044,6 +1085,14 @@ const docTemplate = `{
                     "type": "string"
                 },
                 "quote_asset": {
+                    "type": "string"
+                }
+            }
+        },
+        "github_com_mthpedrosa_financial-exchange-challenge_internal_instrument_domain_dto.CreateInstrumentResponse": {
+            "type": "object",
+            "properties": {
+                "id": {
                     "type": "string"
                 }
             }

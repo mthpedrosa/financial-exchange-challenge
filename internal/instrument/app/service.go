@@ -11,7 +11,7 @@ import (
 )
 
 type Instrument interface {
-	Create(ctx context.Context, request dto.CreateInstrumentRequest) (string, error)
+	Create(ctx context.Context, request dto.CreateInstrumentRequest) (dto.CreateInstrumentResponse, error)
 	FindByID(ctx context.Context, id string) (dto.InstrumentDTO, error)
 	GetInstruments(ctx context.Context, filter dto.InstrumentFilter) ([]*entity.Instrument, error)
 	Update(ctx context.Context, id string, request dto.CreateInstrumentRequest) (dto.InstrumentDTO, error)
@@ -28,28 +28,28 @@ func NewInstrumentApp(instrumentPort port.InstrumentRepository) Instrument {
 	}
 }
 
-func (i *instrument) Create(ctx context.Context, request dto.CreateInstrumentRequest) (string, error) {
+func (i *instrument) Create(ctx context.Context, request dto.CreateInstrumentRequest) (dto.CreateInstrumentResponse, error) {
 	instrumentEntity, err := entity.ToEntity(request)
 	if err != nil {
-		return "", ierr.ErrInvalidInput
+		return dto.CreateInstrumentResponse{}, ierr.ErrInvalidInput
 	}
 
 	// check duplicate
 	_, err = i.instrumentPort.FindByAssets(ctx, instrumentEntity.BaseAsset, instrumentEntity.QuoteAsset)
 	if err == nil {
-		return "", ierr.ErrConflict
+		return dto.CreateInstrumentResponse{}, ierr.ErrConflict
 	}
 
 	if !errors.Is(err, ierr.ErrNotFound) {
-		return "", err
+		return dto.CreateInstrumentResponse{}, err
 	}
 
 	// create
 	createdInstrumentID, createErr := i.instrumentPort.Create(ctx, instrumentEntity)
 	if createErr != nil {
-		return "", createErr
+		return dto.CreateInstrumentResponse{}, createErr
 	}
-	return createdInstrumentID, nil
+	return dto.CreateInstrumentResponse{ID: createdInstrumentID}, nil
 }
 
 func (i *instrument) FindByID(ctx context.Context, id string) (dto.InstrumentDTO, error) {
