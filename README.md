@@ -1,121 +1,149 @@
-# Financial Exchange Challenge
+# Financial Exchange Challenge 🚀
 
-Este projeto é uma API de exchange financeira, construída em Go, que gerencia contas, balances, instrumentos e ordens. As ordens criadas são publicadas em uma fila RabbitMQ para serem processadas por outro serviço responsável pelo motor de matching.
+[![Go version](https://img.shields.io/badge/go-1.22+-00ADD8.svg)](https://golang.org/)
+[![License](https://img.shields.io/badge/license-MIT-green.svg)](LICENSE)
 
----
+API de uma exchange financeira construída em Go. A arquitetura gerencia contas, balances, instrumentos e ordens de compra/venda. As ordens são publicadas em uma fila **RabbitMQ** para serem processadas por um motor de matching externo.
 
-## Dependências Necessárias
+## ✨ Features
 
-- **Go 1.24.8+**
-- **PostgreSQL** (para persistência dos dados)
-- **RabbitMQ** (para fila de ordens)
-- **Docker** (opcional, para facilitar o setup dos serviços)
-- **swag** (para documentação Swagger)
-- Bibliotecas Go:
-  - `github.com/labstack/echo/v4`
-  - `github.com/jackc/pgx/v5/pgxpool`
-  - `github.com/rabbitmq/amqp091-go`
-  - `github.com/swaggo/echo-swagger`
-  - `github.com/go-playground/validator/v10`
-  - `github.com/stretchr/testify`
-  - Outras listadas em `go.mod`
+- **Arquitetura Hexagonal:** Código organizado, testável e de fácil manutenção.
+- **API RESTful:** Endpoints para gerenciar contas, instrumentos, balances e ordens.
+- **Documentação com Swagger:** Interface interativa para explorar e testar a API.
+- **Mensageria com RabbitMQ:** Desacoplamento para processamento assíncrono de ordens.
+- **Totalmente Containerizado:** Ambiente de desenvolvimento e produção padronizado com Docker.
 
 ---
 
-## Variáveis de Ambiente
+## 🚀 Rodando com Docker (Método Recomendado)
 
-Crie um arquivo `.env` na raiz do projeto com as seguintes variáveis:
+A forma mais simples e rápida de ter todo o ambiente (API, Banco de Dados e Fila) rodando.
 
-```
+### Pré-requisitos
+
+- [Docker](https://www.docker.com/get-started/)
+- [Docker Compose](https://docs.docker.com/compose/install/)
+
+### Passo 1: Clone o Repositório
+
+```sh
+git clone <url-do-seu-repositorio>
+cd financial-exchange-challenge
+````
+
+### Passo 2: Crie o Arquivo de Ambiente (`.env`)
+
+Crie um arquivo chamado `.env` na raiz do projeto. **Copie e cole** o conteúdo abaixo. Note que usamos os nomes dos serviços (`db`, `rabbitmq`) em vez de `localhost`.
+
+```env
+# .env para o ambiente Docker
+
+# Configurações da Aplicação
 APP_ENV=development
-APP_NAME=financial-exchange
-LOG_LEVEL=info
+PORT=8080
+LOG_LEVEL=debug
+APP_NAME="Exchange API"
 
-DATABASE_URL=postgres://user:password@localhost:5432/financial_exchange?sslmode=disable
-RABBIT_URL=amqp://guest:guest@localhost:5672/
+# Segredo para JWT
+JWT_SECRET="uma-chave-secreta-forte-e-aleatoria-aqui"
+
+# Conexões com os Serviços do Docker Compose
+DATABASE_URL=postgresql://user:password@db:5432/financial_exchange?sslmode=disable
+RABBITMQ_URL="amqp://guest:guest@rabbitmq:5672/"
 ```
 
-Ajuste os valores conforme seu ambiente.
+### Passo 3: Suba os Contêineres
 
----
+Este único comando irá construir a imagem da sua API, baixar as imagens do Postgres e RabbitMQ, e iniciar todos os serviços em segundo plano.
 
-## Comandos para Rodar
+```sh
+docker-compose up --build -d
+```
 
-1. **Instale as dependências Go:**
-   ```sh
-   go mod tidy
-   ```
+  * `--build`: Constrói a imagem da sua API. Use sempre que alterar o código Go.
+  * `-d`: Roda os contêineres em modo "detached" (segundo plano).
 
-2. **Gere a documentação Swagger:**
-   ```sh
-   go install github.com/swaggo/swag/cmd/swag@latest
-   swag init
-   ```
+### Pronto\!
 
-3. **Suba o banco e o RabbitMQ (exemplo com Docker Compose):**
-   ```yaml
-   # docker-compose.yml
-   version: '3'
-   services:
-     db:
-       image: postgres:15
-       environment:
-         POSTGRES_USER: user
-         POSTGRES_PASSWORD: password
-         POSTGRES_DB: financial_exchange
-       ports:
-         - "5432:5432"
-     rabbitmq:
-       image: rabbitmq:3-management
-       ports:
-         - "5672:5672"
-         - "15672:15672"
-   ```
-   ```sh
-   docker-compose up -d
-   ```
+O ambiente está no ar.
 
-4. **Rode as migrations (se aplicável):**
-   ```sh
-   go run cmd/main.go migrate
-   ```
+  * **API disponível em:** `http://localhost:8080`
+  * **Documentação Swagger:** `http://localhost:8080/swagger/index.html`
+  * **Painel do RabbitMQ:** `http://localhost:15672` (usuário: `guest`, senha: `guest`)
 
-5. **Inicie a aplicação:**
-   ```sh
-   go run cmd/main.go
-   ```
+-----
 
-6. **Acesse a documentação Swagger:**
-   ```
-   http://localhost:8080/swagger/index.html
-   ```
+## 🛠️ Rodando Localmente (Para Desenvolvimento)
 
----
+Use este método se você preferir rodar a aplicação Go diretamente na sua máquina, mas usando Docker para as dependências.
 
-## Integração com o Motor de Matching
+### Pré-requisitos
 
-Este repositório **não executa o matching das ordens**.  
-Ele apenas publica as ordens criadas em uma fila RabbitMQ (`orders`).  
-Outro serviço (motor de matching) deve ser responsável por consumir essa fila, processar as ordens e atualizar o status conforme necessário.
+  - Go (versão 1.22+)
+  - Docker e Docker Compose
+  - [Swag CLI](https://github.com/swaggo/swag) (`go install github.com/swaggo/swag/cmd/swag@latest`)
 
-> **Importante:**  
-> Certifique-se de rodar o serviço de matching em conjunto para que as ordens sejam processadas corretamente.
+### Passo 1: Suba as Dependências
 
----
+Inicie apenas o banco de dados e o RabbitMQ com Docker Compose.
 
-## Testes
+```sh
+docker-compose up -d db rabbitmq
+```
 
-Para rodar os testes:
+### Passo 2: Crie o Arquivo de Ambiente (`.env`)
+
+Crie o arquivo `.env`, mas desta vez, use `localhost` para as conexões, pois sua API estará rodando fora do Docker.
+
+```env
+# .env para o ambiente Local
+
+# ... (demais variáveis como APP_ENV, PORT, etc.)
+
+# Conexões com os Serviços (via localhost)
+DATABASE_URL=postgresql://user:password@localhost:5432/financial_exchange?sslmode=disable
+RABBITMQ_URL="amqp://guest:guest@localhost:5672/"
+```
+
+### Passo 3: Instale as Dependências e Gere a Documentação
+
+```sh
+go mod tidy
+swag init -g cmd/main.go -parseDependency
+```
+
+### Passo 4: Inicie a Aplicação Go
+
+```sh
+go run ./cmd/main.go
+```
+
+A API estará rodando e conectada aos serviços do Docker.
+
+-----
+
+## 🧪 Testes
+
+Para rodar todos os testes unitários e de integração:
+
 ```sh
 go test ./...
 ```
 
+-----
+
+## 🏛️ Arquitetura
+
+O projeto utiliza uma abordagem de **Arquitetura Hexagonal (Ports and Adapters)** para separar as regras de negócio da infraestrutura. Isso resulta em um código mais limpo, desacoplado e fácil de testar.
+
+  - **`internal/`**: Contém o núcleo da aplicação (domínio, casos de uso) e as implementações dos adaptadores (handlers de API, repositórios de banco de dados).
+  - **`cmd/`**: Ponto de entrada da aplicação, onde tudo é inicializado e conectado.
+
+-----
+
 ---
+## 👨‍💻 Desenvolvido por
 
-## Observações
+[<img src="https://upload.wikimedia.org/wikipedia/commons/thumb/8/81/LinkedIn_icon.svg/1024px-LinkedIn_icon.svg.png" width="100px;" alt="Matheus Pedrosa"/><br><sub><b>Matheus Pedrosa</b></sub>](https://www.linkedin.com/in/matheus-pedrosa-custodio/)
 
-- O projeto segue arquitetura hexagonal (ports & adapters).
-- Todas as rotas estão documentadas via Swagger.
-- O código está preparado para produção, mas revise as configurações de segurança antes de expor publicamente.
-
----
+```
