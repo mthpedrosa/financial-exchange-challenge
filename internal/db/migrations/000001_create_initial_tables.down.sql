@@ -1,0 +1,7 @@
+DROP TABLE IF EXISTS orders;
+DROP TABLE IF EXISTS balances;
+DROP TABLE IF EXISTS accounts;
+DROP TABLE IF EXISTS instruments;
+
+DROP TYPE IF EXISTS order_status;
+DROP TYPE IF EXISTS order_type;
