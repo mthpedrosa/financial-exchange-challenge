@@ -25,7 +25,8 @@ mocks:
 	
 .PHONY: swag
 swag:
-	swag init -g cmd/main.go -o docs
+	swag init -g cmd/main.go -parseDependency docs
+	
 # Makefile
 migrate-create:
 	@read -p "Enter migration name: " name; \

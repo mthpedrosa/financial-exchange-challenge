@@ -45,7 +45,7 @@ func (h *account) RegisterRoutes(g *echo.Group) {
 // @Accept       json
 // @Produce      json
 // @Param        account  body      dto.CreateAccountRequest  true  "Account"
-// @Success      201    {object}  dto.AccountDTO
+// @Success      201    {object}  dto.CreateAcountResponse
 // @Failure      400    {object}  map[string]string
 // @Failure      409    {object}  map[string]string
 // @Router       /v1/accounts [post]
@@ -108,7 +108,7 @@ func (h *account) FindByID(ctx echo.Context) error {
 // @Produce      json
 // @Param        email  query   string  false  "Email"
 // @Param        name   query   string  false  "Name"
-// @Success      200  {array}  dto.AccountDTO
+// @Success      200  {array}  dto.AccountListDTO
 // @Router       /v1/accounts [get]
 func (h *account) GetAccounts(ctx echo.Context) error {
 	email := ctx.QueryParam("email")
@@ -155,7 +155,7 @@ func (h *account) DeleteByID(ctx echo.Context) error {
 // @Produce      json
 // @Param        id      path      string                   true  "Account ID"
 // @Param        account body      dto.UpdateAccountRequest true  "Account"
-// @Success      200  {object}  dto.AccountDTO
+// @Success      200  {object}  dto.AccountListDTO
 // @Failure      400  {object}  map[string]string
 // @Failure      404  {object}  map[string]string
 // @Router       /v1/accounts/{id} [put]

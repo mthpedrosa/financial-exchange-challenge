@@ -19,6 +19,16 @@ type AccountFilter struct {
 	Email string
 }
 
+func (a Account) ToDTO() dto.AccountDTO {
+	return dto.AccountDTO{
+		ID:        a.ID,
+		Name:      a.Name,
+		Email:     a.Email,
+		CreatedAt: a.CreatedAt,
+		UpdatedAt: a.UpdatedAt,
+	}
+}
+
 func ToEntityFilter(dto dto.AccountFilter) AccountFilter {
 	return AccountFilter{
 		Name:  dto.Name,
