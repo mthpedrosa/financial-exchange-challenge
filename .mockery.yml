@@ -1,0 +1,16 @@
+all: true
+dir: ./internal
+force-file-write: true
+formatter: goimports
+log-level: info
+structname: '{{.Mock}}{{.InterfaceName}}'
+pkgname: '{{.SrcPackageName}}'
+recursive: true
+require-template-schema-exists: true
+template: testify
+template-schema: '{{.Template}}.schema.json'
+packages:
+  github.com/mthpedrosa/financial-exchange-challenge/internal/account/domain/port: {}
+  github.com/mthpedrosa/financial-exchange-challenge/internal/instrument/domain/port: {}
+  github.com/mthpedrosa/financial-exchange-challenge/internal/balance/domain/port: {}
+  github.com/mthpedrosa/financial-exchange-challenge/internal/order/domain/port: {}

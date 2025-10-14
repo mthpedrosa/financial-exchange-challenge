@@ -1,0 +1,754 @@
+basePath: /v1
+definitions:
+  big.Float:
+    type: object
+  github_com_mthpedrosa_financial-exchange-challenge_internal_account_domain_dto.AccountDTO:
+    properties:
+      created_at:
+        type: string
+      email:
+        type: string
+      id:
+        type: string
+      name:
+        type: string
+      updated_at:
+        type: string
+    type: object
+  github_com_mthpedrosa_financial-exchange-challenge_internal_account_domain_dto.AccountListDTO:
+    properties:
+      id:
+        type: string
+      name:
+        type: string
+    type: object
+  github_com_mthpedrosa_financial-exchange-challenge_internal_account_domain_dto.CreateAccountRequest:
+    properties:
+      email:
+        type: string
+      name:
+        type: string
+    required:
+    - email
+    - name
+    type: object
+  github_com_mthpedrosa_financial-exchange-challenge_internal_account_domain_dto.CreateAccountResponse:
+    properties:
+      id:
+        type: string
+    type: object
+  github_com_mthpedrosa_financial-exchange-challenge_internal_account_domain_dto.UpdateAccountRequest:
+    properties:
+      email:
+        type: string
+      name:
+        type: string
+    required:
+    - email
+    - name
+    type: object
+  github_com_mthpedrosa_financial-exchange-challenge_internal_balance_domain_dto.BalanceListDTO:
+    properties:
+      account_id:
+        type: string
+      amount:
+        $ref: '#/definitions/big.Float'
+      asset:
+        type: string
+      id:
+        type: string
+    type: object
+  github_com_mthpedrosa_financial-exchange-challenge_internal_balance_domain_dto.BigFloat:
+    type: object
+  github_com_mthpedrosa_financial-exchange-challenge_internal_balance_domain_dto.CreateBalanceRequest:
+    properties:
+      account_id:
+        type: string
+      amount:
+        $ref: '#/definitions/github_com_mthpedrosa_financial-exchange-challenge_internal_balance_domain_dto.BigFloat'
+      asset:
+        type: string
+    type: object
+  github_com_mthpedrosa_financial-exchange-challenge_internal_balance_domain_dto.UpdateBalanceRequest:
+    properties:
+      amount:
+        $ref: '#/definitions/big.Float'
+    type: object
+  github_com_mthpedrosa_financial-exchange-challenge_internal_instrument_domain_dto.CreateInstrumentRequest:
+    properties:
+      base_asset:
+        type: string
+      quote_asset:
+        type: string
+    required:
+    - base_asset
+    - quote_asset
+    type: object
+  github_com_mthpedrosa_financial-exchange-challenge_internal_instrument_domain_dto.InstrumentDTO:
+    properties:
+      base_asset:
+        type: string
+      created_at:
+        type: string
+      id:
+        type: string
+      quote_asset:
+        type: string
+      updated_at:
+        type: string
+    type: object
+  github_com_mthpedrosa_financial-exchange-challenge_internal_instrument_domain_dto.InstrumentListDTO:
+    properties:
+      base_asset:
+        type: string
+      id:
+        type: string
+      quote_asset:
+        type: string
+    type: object
+  github_com_mthpedrosa_financial-exchange-challenge_internal_order_domain_dto.BigFloat:
+    type: object
+  github_com_mthpedrosa_financial-exchange-challenge_internal_order_domain_dto.CreateOrderRequest:
+    properties:
+      account_id:
+        type: string
+      instrument_id:
+        type: string
+      price:
+        $ref: '#/definitions/github_com_mthpedrosa_financial-exchange-challenge_internal_order_domain_dto.BigFloat'
+      quantity:
+        $ref: '#/definitions/github_com_mthpedrosa_financial-exchange-challenge_internal_order_domain_dto.BigFloat'
+      type:
+        enum:
+        - BUY
+        - SELL
+        type: string
+    required:
+    - account_id
+    - instrument_id
+    - price
+    - quantity
+    - type
+    type: object
+  github_com_mthpedrosa_financial-exchange-challenge_internal_order_domain_dto.OrderDTO:
+    properties:
+      account_id:
+        type: string
+      created_at:
+        type: string
+      id:
+        type: string
+      instrument_id:
+        type: string
+      price:
+        $ref: '#/definitions/big.Float'
+      quantity:
+        $ref: '#/definitions/big.Float'
+      remaining_quantity:
+        $ref: '#/definitions/big.Float'
+      status:
+        type: string
+      type:
+        type: string
+      updated_at:
+        type: string
+    type: object
+host: localhost:8080
+info:
+  contact: {}
+  description: Esta é a documentação da API para o desafio.
+  license:
+    name: Apache 2.0
+    url: http://www.apache.org/licenses/LICENSE-2.0.html
+  termsOfService: http://swagger.io/terms/
+  title: Financial Exchange Challenge API
+  version: "1.0"
+paths:
+  /v1/accounts:
+    get:
+      parameters:
+      - description: Email
+        in: query
+        name: email
+        type: string
+      - description: Name
+        in: query
+        name: name
+        type: string
+      produces:
+      - application/json
+      responses:
+        "200":
+          description: OK
+          schema:
+            items:
+              $ref: '#/definitions/github_com_mthpedrosa_financial-exchange-challenge_internal_account_domain_dto.AccountListDTO'
+            type: array
+      summary: Lista contas
+      tags:
+      - accounts
+    post:
+      consumes:
+      - application/json
+      description: Cria uma nova conta de usuário
+      parameters:
+      - description: Account
+        in: body
+        name: account
+        required: true
+        schema:
+          $ref: '#/definitions/github_com_mthpedrosa_financial-exchange-challenge_internal_account_domain_dto.CreateAccountRequest'
+      produces:
+      - application/json
+      responses:
+        "201":
+          description: Created
+          schema:
+            $ref: '#/definitions/github_com_mthpedrosa_financial-exchange-challenge_internal_account_domain_dto.CreateAccountResponse'
+        "400":
+          description: invalid request payload
+          schema:
+            additionalProperties:
+              type: string
+            type: object
+        "409":
+          description: record already exists or causes a conflict
+          schema:
+            additionalProperties:
+              type: string
+            type: object
+      summary: Cria uma nova conta
+      tags:
+      - accounts
+  /v1/accounts/{id}:
+    delete:
+      parameters:
+      - description: Account ID
+        in: path
+        name: id
+        required: true
+        type: string
+      produces:
+      - application/json
+      responses:
+        "204":
+          description: No Content
+        "400":
+          description: ID cannot be empty
+          schema:
+            additionalProperties:
+              type: string
+            type: object
+        "404":
+          description: record not found
+          schema:
+            additionalProperties:
+              type: string
+            type: object
+      summary: Deleta uma conta
+      tags:
+      - accounts
+    get:
+      parameters:
+      - description: Account ID
+        in: path
+        name: id
+        required: true
+        type: string
+      produces:
+      - application/json
+      responses:
+        "200":
+          description: OK
+          schema:
+            $ref: '#/definitions/github_com_mthpedrosa_financial-exchange-challenge_internal_account_domain_dto.AccountDTO'
+        "400":
+          description: ID cannot be empty
+          schema:
+            additionalProperties:
+              type: string
+            type: object
+        "404":
+          description: record not found
+          schema:
+            additionalProperties:
+              type: string
+            type: object
+      summary: Busca uma conta por ID
+      tags:
+      - accounts
+    put:
+      consumes:
+      - application/json
+      parameters:
+      - description: Account ID
+        in: path
+        name: id
+        required: true
+        type: string
+      - description: Account
+        in: body
+        name: account
+        required: true
+        schema:
+          $ref: '#/definitions/github_com_mthpedrosa_financial-exchange-challenge_internal_account_domain_dto.UpdateAccountRequest'
+      produces:
+      - application/json
+      responses:
+        "200":
+          description: OK
+          schema:
+            $ref: '#/definitions/github_com_mthpedrosa_financial-exchange-challenge_internal_account_domain_dto.AccountListDTO'
+        "400":
+          description: ID cannot be empty
+          schema:
+            additionalProperties:
+              type: string
+            type: object
+        "404":
+          description: record not found
+          schema:
+            additionalProperties:
+              type: string
+            type: object
+      summary: Atualiza uma conta
+      tags:
+      - accounts
+  /v1/balances:
+    post:
+      consumes:
+      - application/json
+      description: Cria um novo balance para uma conta e asset
+      parameters:
+      - description: Balance
+        in: body
+        name: balance
+        required: true
+        schema:
+          $ref: '#/definitions/github_com_mthpedrosa_financial-exchange-challenge_internal_balance_domain_dto.CreateBalanceRequest'
+      produces:
+      - application/json
+      responses:
+        "201":
+          description: Created
+          schema:
+            $ref: '#/definitions/github_com_mthpedrosa_financial-exchange-challenge_internal_balance_domain_dto.BalanceListDTO'
+        "400":
+          description: invalid request payload
+          schema:
+            additionalProperties:
+              type: string
+            type: object
+        "409":
+          description: record already exists or causes a conflict
+          schema:
+            additionalProperties:
+              type: string
+            type: object
+      summary: Cria um novo balance
+      tags:
+      - balances
+  /v1/balances/{id}:
+    delete:
+      parameters:
+      - description: Balance ID
+        in: path
+        name: id
+        required: true
+        type: string
+      produces:
+      - application/json
+      responses:
+        "204":
+          description: No Content
+        "404":
+          description: record not found
+          schema:
+            additionalProperties:
+              type: string
+            type: object
+      summary: Deleta um balance
+      tags:
+      - balances
+    get:
+      parameters:
+      - description: Balance ID
+        in: path
+        name: id
+        required: true
+        type: string
+      produces:
+      - application/json
+      responses:
+        "200":
+          description: OK
+          schema:
+            $ref: '#/definitions/github_com_mthpedrosa_financial-exchange-challenge_internal_balance_domain_dto.BalanceListDTO'
+        "404":
+          description: balance ID cannot be empty
+          schema:
+            additionalProperties:
+              type: string
+            type: object
+      summary: Busca um balance por ID
+      tags:
+      - balances
+    put:
+      consumes:
+      - application/json
+      parameters:
+      - description: Balance ID
+        in: path
+        name: id
+        required: true
+        type: string
+      - description: Balance
+        in: body
+        name: balance
+        required: true
+        schema:
+          $ref: '#/definitions/github_com_mthpedrosa_financial-exchange-challenge_internal_balance_domain_dto.UpdateBalanceRequest'
+      produces:
+      - application/json
+      responses:
+        "200":
+          description: OK
+          schema:
+            $ref: '#/definitions/github_com_mthpedrosa_financial-exchange-challenge_internal_balance_domain_dto.BalanceListDTO'
+        "400":
+          description: invalid request payload
+          schema:
+            additionalProperties:
+              type: string
+            type: object
+        "404":
+          description: record not found
+          schema:
+            additionalProperties:
+              type: string
+            type: object
+      summary: Atualiza um balance
+      tags:
+      - balances
+  /v1/balances/account/{account_id}:
+    get:
+      parameters:
+      - description: Account ID
+        in: path
+        name: account_id
+        required: true
+        type: string
+      produces:
+      - application/json
+      responses:
+        "200":
+          description: OK
+          schema:
+            items:
+              $ref: '#/definitions/github_com_mthpedrosa_financial-exchange-challenge_internal_balance_domain_dto.BalanceListDTO'
+            type: array
+      summary: Lista todos os balances de uma conta
+      tags:
+      - balances
+  /v1/balances/account/{account_id}/asset/{asset}:
+    get:
+      parameters:
+      - description: Account ID
+        in: path
+        name: account_id
+        required: true
+        type: string
+      - description: Asset
+        in: path
+        name: asset
+        required: true
+        type: string
+      produces:
+      - application/json
+      responses:
+        "200":
+          description: OK
+          schema:
+            $ref: '#/definitions/github_com_mthpedrosa_financial-exchange-challenge_internal_balance_domain_dto.BalanceListDTO'
+        "404":
+          description: account_id and asset are required
+          schema:
+            additionalProperties:
+              type: string
+            type: object
+      summary: Busca um balance por account e asset
+      tags:
+      - balances
+  /v1/instruments:
+    get:
+      parameters:
+      - description: Base Asset
+        in: query
+        name: base_asset
+        type: string
+      - description: Quote Asset
+        in: query
+        name: quote_asset
+        type: string
+      produces:
+      - application/json
+      responses:
+        "200":
+          description: OK
+          schema:
+            items:
+              $ref: '#/definitions/github_com_mthpedrosa_financial-exchange-challenge_internal_instrument_domain_dto.InstrumentListDTO'
+            type: array
+      summary: Lista instrumentos financeiros
+      tags:
+      - instruments
+    post:
+      consumes:
+      - application/json
+      description: Cria um novo instrumento financeiro
+      parameters:
+      - description: Instrument
+        in: body
+        name: instrument
+        required: true
+        schema:
+          $ref: '#/definitions/github_com_mthpedrosa_financial-exchange-challenge_internal_instrument_domain_dto.CreateInstrumentRequest'
+      produces:
+      - application/json
+      responses:
+        "201":
+          description: Created
+          schema:
+            $ref: '#/definitions/github_com_mthpedrosa_financial-exchange-challenge_internal_instrument_domain_dto.InstrumentDTO'
+        "400":
+          description: Bad Request
+          schema:
+            additionalProperties:
+              type: string
+            type: object
+        "409":
+          description: Conflict
+          schema:
+            additionalProperties:
+              type: string
+            type: object
+      summary: Cria um novo instrumento
+      tags:
+      - instruments
+  /v1/instruments/{id}:
+    delete:
+      parameters:
+      - description: Instrument ID
+        in: path
+        name: id
+        required: true
+        type: string
+      produces:
+      - application/json
+      responses:
+        "204":
+          description: No Content
+        "404":
+          description: Not Found
+          schema:
+            additionalProperties:
+              type: string
+            type: object
+      summary: Deleta um instrumento
+      tags:
+      - instruments
+    get:
+      parameters:
+      - description: Instrument ID
+        in: path
+        name: id
+        required: true
+        type: string
+      produces:
+      - application/json
+      responses:
+        "200":
+          description: OK
+          schema:
+            $ref: '#/definitions/github_com_mthpedrosa_financial-exchange-challenge_internal_instrument_domain_dto.InstrumentDTO'
+        "404":
+          description: Not Found
+          schema:
+            additionalProperties:
+              type: string
+            type: object
+      summary: Busca um instrumento por ID
+      tags:
+      - instruments
+    put:
+      consumes:
+      - application/json
+      parameters:
+      - description: Instrument ID
+        in: path
+        name: id
+        required: true
+        type: string
+      - description: Instrument
+        in: body
+        name: instrument
+        required: true
+        schema:
+          $ref: '#/definitions/github_com_mthpedrosa_financial-exchange-challenge_internal_instrument_domain_dto.CreateInstrumentRequest'
+      produces:
+      - application/json
+      responses:
+        "200":
+          description: OK
+          schema:
+            $ref: '#/definitions/github_com_mthpedrosa_financial-exchange-challenge_internal_instrument_domain_dto.InstrumentDTO'
+        "400":
+          description: Bad Request
+          schema:
+            additionalProperties:
+              type: string
+            type: object
+        "404":
+          description: Not Found
+          schema:
+            additionalProperties:
+              type: string
+            type: object
+        "409":
+          description: Conflict
+          schema:
+            additionalProperties:
+              type: string
+            type: object
+      summary: Atualiza um instrumento
+      tags:
+      - instruments
+  /v1/orders:
+    get:
+      produces:
+      - application/json
+      responses:
+        "200":
+          description: OK
+          schema:
+            items:
+              $ref: '#/definitions/github_com_mthpedrosa_financial-exchange-challenge_internal_order_domain_dto.OrderDTO'
+            type: array
+      summary: Lista todas as ordens
+      tags:
+      - orders
+    post:
+      consumes:
+      - application/json
+      description: Cria uma nova ordem e envia para a fila
+      parameters:
+      - description: Order
+        in: body
+        name: order
+        required: true
+        schema:
+          $ref: '#/definitions/github_com_mthpedrosa_financial-exchange-challenge_internal_order_domain_dto.CreateOrderRequest'
+      produces:
+      - application/json
+      responses:
+        "201":
+          description: Created
+          schema:
+            $ref: '#/definitions/github_com_mthpedrosa_financial-exchange-challenge_internal_order_domain_dto.OrderDTO'
+        "400":
+          description: Bad Request
+          schema:
+            additionalProperties:
+              type: string
+            type: object
+        "409":
+          description: Conflict
+          schema:
+            additionalProperties:
+              type: string
+            type: object
+      summary: Cria uma nova ordem
+      tags:
+      - orders
+  /v1/orders/{id}:
+    get:
+      parameters:
+      - description: Order ID
+        in: path
+        name: id
+        required: true
+        type: string
+      produces:
+      - application/json
+      responses:
+        "200":
+          description: OK
+          schema:
+            $ref: '#/definitions/github_com_mthpedrosa_financial-exchange-challenge_internal_order_domain_dto.OrderDTO'
+        "404":
+          description: Not Found
+          schema:
+            additionalProperties:
+              type: string
+            type: object
+      summary: Busca uma ordem por ID
+      tags:
+      - orders
+    put:
+      consumes:
+      - application/json
+      parameters:
+      - description: Order ID
+        in: path
+        name: id
+        required: true
+        type: string
+      - description: Order
+        in: body
+        name: order
+        required: true
+        schema:
+          $ref: '#/definitions/github_com_mthpedrosa_financial-exchange-challenge_internal_order_domain_dto.CreateOrderRequest'
+      produces:
+      - application/json
+      responses:
+        "204":
+          description: No Content
+        "400":
+          description: Bad Request
+          schema:
+            additionalProperties:
+              type: string
+            type: object
+        "404":
+          description: Not Found
+          schema:
+            additionalProperties:
+              type: string
+            type: object
+      summary: Atualiza uma ordem
+      tags:
+      - orders
+  /v1/orders/{id}/cancel:
+    post:
+      parameters:
+      - description: Order ID
+        in: path
+        name: id
+        required: true
+        type: string
+      produces:
+      - application/json
+      responses:
+        "204":
+          description: No Content
+        "404":
+          description: Not Found
+          schema:
+            additionalProperties:
+              type: string
+            type: object
+      summary: Cancela uma ordem
+      tags:
+      - orders
+swagger: "2.0"
