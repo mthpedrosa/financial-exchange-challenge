@@ -10,7 +10,7 @@ import (
 )
 
 type Account interface {
-	Create(ctx context.Context, request dto.CreateAccountRequest) (dto.CreateAcountResponse, error)
+	Create(ctx context.Context, request dto.CreateAccountRequest) (dto.CreateAccountResponse, error)
 	FindByID(ctx context.Context, email string) (dto.AccountDTO, error)
 	GetAccounts(ctx context.Context, filters dto.AccountFilter) ([]dto.AccountListDTO, error)
 	DeleteByID(ctx context.Context, id string) error
@@ -27,27 +27,27 @@ func NewAccountApp(accountPort port.AccountRepository) Account {
 	}
 }
 
-func (a *account) Create(ctx context.Context, request dto.CreateAccountRequest) (dto.CreateAcountResponse, error) {
+func (a *account) Create(ctx context.Context, request dto.CreateAccountRequest) (dto.CreateAccountResponse, error) {
 	entityAccount, err := entity.ToEntity(request)
 	if err != nil {
-		return dto.CreateAcountResponse{}, err
+		return dto.CreateAccountResponse{}, err
 	}
 
 	existingAccounts, err := a.accountPort.GetAccounts(ctx, entity.AccountFilter{Email: entityAccount.Email})
 	if err != nil {
-		return dto.CreateAcountResponse{}, err
+		return dto.CreateAccountResponse{}, err
 	}
 
 	if len(existingAccounts) > 0 {
-		return dto.CreateAcountResponse{}, ierr.ErrConflict
+		return dto.CreateAccountResponse{}, ierr.ErrConflict
 	}
 
 	entityAccount.ID, err = a.accountPort.Create(ctx, *entityAccount)
 	if err != nil {
-		return dto.CreateAcountResponse{}, err
+		return dto.CreateAccountResponse{}, err
 	}
 
-	return dto.CreateAcountResponse{ID: entityAccount.ID}, nil
+	return dto.CreateAccountResponse{ID: entityAccount.ID}, nil
 }
 
 func (a *account) FindByID(ctx context.Context, id string) (dto.AccountDTO, error) {

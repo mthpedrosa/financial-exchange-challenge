@@ -48,8 +48,8 @@ func (h *balance) RegisterRoutes(g *echo.Group) {
 // @Produce      json
 // @Param        balance  body      dto.CreateBalanceRequest  true  "Balance"
 // @Success      201    {object}  dto.BalanceListDTO
-// @Failure      400    {object}  map[string]string
-// @Failure      409    {object}  map[string]string
+// @Failure      400    {object}  map[string]string "invalid request payload"
+// @Failure      409    {object}  map[string]string "record already exists or causes a conflict"
 // @Router       /v1/balances [post]
 func (h *balance) Create(ctx echo.Context) error {
 	var request dto.CreateBalanceRequest
@@ -82,7 +82,7 @@ func (h *balance) Create(ctx echo.Context) error {
 // @Produce      json
 // @Param        id   path      string  true  "Balance ID"
 // @Success      200  {object}  dto.BalanceListDTO
-// @Failure      404  {object}  map[string]string
+// @Failure      404  {object}  map[string]string "balance ID cannot be empty"
 // @Router       /v1/balances/{id} [get]
 func (h *balance) FindByID(ctx echo.Context) error {
 	id := ctx.Param("id")
@@ -109,7 +109,7 @@ func (h *balance) FindByID(ctx echo.Context) error {
 // @Param        account_id   path   string  true  "Account ID"
 // @Param        asset        path   string  true  "Asset"
 // @Success      200  {object}  dto.BalanceListDTO
-// @Failure      404  {object}  map[string]string
+// @Failure      404  {object}  map[string]string "account_id and asset are required"
 // @Router       /v1/balances/account/{account_id}/asset/{asset} [get]
 func (h *balance) FindByAccountAndAsset(ctx echo.Context) error {
 	accountID := ctx.Param("account_id")
@@ -160,8 +160,8 @@ func (h *balance) GetAllByAccountID(ctx echo.Context) error {
 // @Param        id      path      string                  true  "Balance ID"
 // @Param        balance body      dto.UpdateBalanceRequest true  "Balance"
 // @Success      200  {object}  dto.BalanceListDTO
-// @Failure      400  {object}  map[string]string
-// @Failure      404  {object}  map[string]string
+// @Failure      400  {object}  map[string]string "invalid request payload"
+// @Failure      404  {object}  map[string]string "record not found"
 // @Router       /v1/balances/{id} [put]
 func (h *balance) Update(ctx echo.Context) error {
 	id := ctx.Param("id")
@@ -198,7 +198,7 @@ func (h *balance) Update(ctx echo.Context) error {
 // @Produce      json
 // @Param        id   path      string  true  "Balance ID"
 // @Success      204  "No Content"
-// @Failure      404  {object}  map[string]string
+// @Failure      404  {object}  map[string]string "record not found"
 // @Router       /v1/balances/{id} [delete]
 func (h *balance) DeleteByID(ctx echo.Context) error {
 	id := ctx.Param("id")
