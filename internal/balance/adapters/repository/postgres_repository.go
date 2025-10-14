@@ -70,6 +70,7 @@ func (r *balanceRepository) FindByID(ctx context.Context, id string) (entity.Bal
 
 // FindByAccountAndAsset returns a balance for a given account and asset.
 func (r *balanceRepository) FindByAccountAndAsset(ctx context.Context, accountID, asset string) (entity.Balance, error) {
+	fmt.Println("Finding balance for accountID:", accountID, "and asset:", asset)
 	query := `SELECT id, account_id, asset, amount, created_at, updated_at FROM balances WHERE account_id = $1 AND asset = $2`
 	var m BalanceModel
 	var amountStr string
@@ -88,6 +89,9 @@ func (r *balanceRepository) FindByAccountAndAsset(ctx context.Context, accountID
 		return entity.Balance{}, err
 	}
 	m.Amount, _ = new(big.Float).SetString(amountStr)
+	fmt.Println("Amount:", m.Amount.String())
+	fmt.Println("Convert:", m.ToEntity())
+
 	return m.ToEntity(), nil
 }
 

@@ -19,6 +19,10 @@ type CreateInstrumentRequest struct {
 	QuoteAsset string `json:"quote_asset" validate:"required"`
 }
 
+type CreateInstrumentResponse struct {
+	ID string `json:"id"`
+}
+
 type InstrumentFilter struct {
 	BaseAsset  string `query:"base_asset"`
 	QuoteAsset string `query:"quote_asset"`

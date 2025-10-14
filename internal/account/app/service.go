@@ -11,10 +11,10 @@ import (
 
 type Account interface {
 	Create(ctx context.Context, request dto.CreateAccountRequest) (dto.CreateAccountResponse, error)
+	Update(ctx context.Context, id string, request dto.UpdateAccountRequest) (dto.AccountDTO, error)
 	FindByID(ctx context.Context, email string) (dto.AccountDTO, error)
 	GetAccounts(ctx context.Context, filters dto.AccountFilter) ([]dto.AccountListDTO, error)
 	DeleteByID(ctx context.Context, id string) error
-	Update(ctx context.Context, id string, request dto.UpdateAccountRequest) (dto.AccountDTO, error)
 }
 
 type account struct {
@@ -50,24 +50,6 @@ func (a *account) Create(ctx context.Context, request dto.CreateAccountRequest) 
 	return dto.CreateAccountResponse{ID: entityAccount.ID}, nil
 }
 
-func (a *account) FindByID(ctx context.Context, id string) (dto.AccountDTO, error) {
-	account, err := a.accountPort.FindByID(ctx, id)
-	return account.ToDTO(), err
-}
-
-func (a *account) GetAccounts(ctx context.Context, filters dto.AccountFilter) ([]dto.AccountListDTO, error) {
-	accounts, err := a.accountPort.GetAccounts(ctx, entity.ToEntityFilter(filters))
-	if err != nil {
-		return nil, err
-	}
-
-	return entity.ToListDTO(accounts), nil
-}
-
-func (a *account) DeleteByID(ctx context.Context, id string) error {
-	return a.accountPort.DeleteByID(ctx, id)
-}
-
 func (a *account) Update(ctx context.Context, id string, request dto.UpdateAccountRequest) (dto.AccountDTO, error) {
 	entityAccount, err := entity.ToEntityUpdate(request)
 	if err != nil {
@@ -91,4 +73,22 @@ func (a *account) Update(ctx context.Context, id string, request dto.UpdateAccou
 	}
 
 	return entityAccount.ToDTO(), nil
+}
+
+func (a *account) FindByID(ctx context.Context, id string) (dto.AccountDTO, error) {
+	account, err := a.accountPort.FindByID(ctx, id)
+	return account.ToDTO(), err
+}
+
+func (a *account) GetAccounts(ctx context.Context, filters dto.AccountFilter) ([]dto.AccountListDTO, error) {
+	accounts, err := a.accountPort.GetAccounts(ctx, entity.ToEntityFilter(filters))
+	if err != nil {
+		return nil, err
+	}
+
+	return entity.ToListDTO(accounts), nil
+}
+
+func (a *account) DeleteByID(ctx context.Context, id string) error {
+	return a.accountPort.DeleteByID(ctx, id)
 }

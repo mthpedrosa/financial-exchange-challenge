@@ -12,9 +12,9 @@ import (
 
 type Instrument interface {
 	Create(c echo.Context) error
+	Update(c echo.Context) error
 	FindByID(c echo.Context) error
 	GetInstruments(c echo.Context) error
-	Update(c echo.Context) error
 	DeleteByID(c echo.Context) error
 	RegisterRoutes(g *echo.Group)
 }
@@ -44,7 +44,7 @@ func (h *instrument) RegisterRoutes(g *echo.Group) {
 // @Accept       json
 // @Produce      json
 // @Param        instrument  body      dto.CreateInstrumentRequest  true  "Instrument"
-// @Success      201    {object}  dto.InstrumentDTO
+// @Success      201    {object}  dto.CreateInstrumentResponse
 // @Failure      400    {object}  map[string]string
 // @Failure      409    {object}  map[string]string
 // @Router       /v1/instruments [post]
@@ -66,6 +66,46 @@ func (h *instrument) Create(c echo.Context) error {
 	}
 
 	return c.JSON(http.StatusCreated, createdInstrument)
+}
+
+// Update godoc
+// @Summary      Atualiza um instrumento
+// @Tags         instruments
+// @Accept       json
+// @Produce      json
+// @Param        id         path      string                     true  "Instrument ID"
+// @Param        instrument body      dto.CreateInstrumentRequest true  "Instrument"
+// @Success      200  {object}  dto.InstrumentDTO
+// @Failure      400  {object}  map[string]string
+// @Failure      404  {object}  map[string]string
+// @Failure      409  {object}  map[string]string
+// @Router       /v1/instruments/{id} [put]
+func (h *instrument) Update(c echo.Context) error {
+	id := c.Param("id")
+	if id == "" {
+		return echo.NewHTTPError(http.StatusBadRequest, "instrument ID cannot be empty")
+	}
+
+	var request dto.CreateInstrumentRequest
+	if err := c.Bind(&request); err != nil {
+		return c.JSON(http.StatusBadRequest, map[string]string{"message": err.Error()})
+	}
+	if err := request.Validate(); err != nil {
+		return c.JSON(http.StatusBadRequest, map[string]string{"message": err.Error()})
+	}
+
+	updatedInstrument, err := h.instrumentApp.Update(c.Request().Context(), id, request)
+	if err != nil {
+		if errors.Is(err, ierr.ErrNotFound) {
+			return c.JSON(http.StatusNotFound, map[string]string{"message": err.Error()})
+		}
+		if errors.Is(err, ierr.ErrConflict) {
+			return c.JSON(http.StatusConflict, map[string]string{"message": err.Error()})
+		}
+		return c.JSON(http.StatusInternalServerError, map[string]string{"message": "internal server error"})
+	}
+
+	return c.JSON(http.StatusOK, updatedInstrument)
 }
 
 // FindByID godoc
@@ -113,46 +153,6 @@ func (h *instrument) GetInstruments(c echo.Context) error {
 	}
 
 	return c.JSON(http.StatusOK, instruments)
-}
-
-// Update godoc
-// @Summary      Atualiza um instrumento
-// @Tags         instruments
-// @Accept       json
-// @Produce      json
-// @Param        id         path      string                     true  "Instrument ID"
-// @Param        instrument body      dto.CreateInstrumentRequest true  "Instrument"
-// @Success      200  {object}  dto.InstrumentDTO
-// @Failure      400  {object}  map[string]string
-// @Failure      404  {object}  map[string]string
-// @Failure      409  {object}  map[string]string
-// @Router       /v1/instruments/{id} [put]
-func (h *instrument) Update(c echo.Context) error {
-	id := c.Param("id")
-	if id == "" {
-		return echo.NewHTTPError(http.StatusBadRequest, "instrument ID cannot be empty")
-	}
-
-	var request dto.CreateInstrumentRequest // Reutilizando o DTO de criação para o update
-	if err := c.Bind(&request); err != nil {
-		return c.JSON(http.StatusBadRequest, map[string]string{"message": err.Error()})
-	}
-	if err := request.Validate(); err != nil {
-		return c.JSON(http.StatusBadRequest, map[string]string{"message": err.Error()})
-	}
-
-	updatedInstrument, err := h.instrumentApp.Update(c.Request().Context(), id, request)
-	if err != nil {
-		if errors.Is(err, ierr.ErrNotFound) {
-			return c.JSON(http.StatusNotFound, map[string]string{"message": err.Error()})
-		}
-		if errors.Is(err, ierr.ErrConflict) {
-			return c.JSON(http.StatusConflict, map[string]string{"message": err.Error()})
-		}
-		return c.JSON(http.StatusInternalServerError, map[string]string{"message": "internal server error"})
-	}
-
-	return c.JSON(http.StatusOK, updatedInstrument)
 }
 
 // DeleteByID godoc

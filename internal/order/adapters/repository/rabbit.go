@@ -22,7 +22,7 @@ func NewOrderQueueRepository(channel *amqp.Channel, queue string) *OrderQueueRep
 
 // PublishOrder sends an order to the RabbitMQ queue
 func (r *OrderQueueRepository) PublishOrder(ctx context.Context, order entity.Order) error {
-	body, err := json.Marshal(order)
+	body, err := json.Marshal(ToModel(order))
 	if err != nil {
 		return err
 	}

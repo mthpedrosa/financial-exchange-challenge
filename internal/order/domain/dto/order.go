@@ -38,6 +38,10 @@ type CreateOrderRequest struct {
 	Quantity     BigFloat `json:"quantity" validate:"required"`
 }
 
+type CreateOrderResponse struct {
+	ID string `json:"id"`
+}
+
 func (r *CreateOrderRequest) Validate() error {
 	validate := validator.New()
 	return validate.Struct(r)

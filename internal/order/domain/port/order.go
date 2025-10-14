@@ -11,6 +11,7 @@ type OrderRepository interface {
 	FindByID(ctx context.Context, id string) (entity.Order, error)
 	GetAll(ctx context.Context) ([]entity.Order, error)
 	Update(ctx context.Context, order entity.Order) error
+	FindByInstrumentID(ctx context.Context, instrumentID string) ([]entity.Order, error)
 }
 
 type OrderQueue interface {

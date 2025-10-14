@@ -116,3 +116,40 @@ func (r *orderRepository) Update(ctx context.Context, order entity.Order) error 
 	}
 	return nil
 }
+
+func (r *orderRepository) FindByInstrumentID(ctx context.Context, id string) ([]entity.Order, error) {
+	query := `SELECT * FROM orders WHERE instrument_id = $1`
+	rows, err := r.db.Query(ctx, query, id)
+	if err != nil {
+		return nil, err
+	}
+	defer rows.Close()
+
+	var orders []entity.Order
+	for rows.Next() {
+		var o entity.Order
+		var priceStr, quantityStr, remainingStr string
+		if err := rows.Scan(
+			&o.ID,
+			&o.AccountID,
+			&o.InstrumentID,
+			&o.Type,
+			&o.Status,
+			&priceStr,
+			&quantityStr,
+			&remainingStr,
+			&o.CreatedAt,
+			&o.UpdatedAt,
+		); err != nil {
+			return nil, err
+		}
+		o.Price, _ = new(big.Float).SetString(priceStr)
+		o.Quantity, _ = new(big.Float).SetString(quantityStr)
+		o.RemainingQuantity, _ = new(big.Float).SetString(remainingStr)
+		orders = append(orders, o)
+	}
+	if err := rows.Err(); err != nil {
+		return nil, err
+	}
+	return orders, nil
+}

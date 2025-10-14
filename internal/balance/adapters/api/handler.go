@@ -13,10 +13,10 @@ import (
 
 type Balance interface {
 	Create(context echo.Context) error
+	Update(context echo.Context) error
 	FindByID(context echo.Context) error
 	FindByAccountAndAsset(context echo.Context) error
 	GetAllByAccountID(context echo.Context) error
-	Update(context echo.Context) error
 	DeleteByID(context echo.Context) error
 	RegisterRoutes(g *echo.Group)
 }
@@ -74,6 +74,46 @@ func (h *balance) Create(ctx echo.Context) error {
 	}
 
 	return ctx.JSON(http.StatusCreated, resp)
+}
+
+// Update godoc
+// @Summary      Atualiza um balance
+// @Tags         balances
+// @Accept       json
+// @Produce      json
+// @Param        id      path      string                  true  "Balance ID"
+// @Param        balance body      dto.UpdateBalanceRequest true  "Balance"
+// @Success      200  {object}  dto.BalanceListDTO
+// @Failure      400  {object}  map[string]string "invalid request payload"
+// @Failure      404  {object}  map[string]string "record not found"
+// @Router       /v1/balances/{id} [put]
+func (h *balance) Update(ctx echo.Context) error {
+	id := ctx.Param("id")
+	if id == "" {
+		return echo.NewHTTPError(http.StatusBadRequest, "id cannot be empty")
+	}
+
+	var request dto.UpdateBalanceRequest
+	if err := ctx.Bind(&request); err != nil {
+		return echo.NewHTTPError(http.StatusBadRequest, err)
+	}
+
+	if err := request.Validate(); err != nil {
+		return echo.NewHTTPError(http.StatusBadRequest, err)
+	}
+
+	updatedBalance, err := h.balanceApp.Update(ctx.Request().Context(), id, request)
+	if err != nil {
+		switch {
+		case errors.Is(err, ierr.ErrNotFound):
+			return echo.NewHTTPError(http.StatusNotFound, err.Error())
+		default:
+			slog.Error("error updating balance", "error", err)
+			return echo.NewHTTPError(http.StatusInternalServerError, "an unexpected error occurred")
+		}
+	}
+
+	return ctx.JSON(http.StatusOK, updatedBalance)
 }
 
 // FindByID godoc
@@ -152,53 +192,13 @@ func (h *balance) GetAllByAccountID(ctx echo.Context) error {
 	return ctx.JSON(http.StatusOK, balances)
 }
 
-// Update godoc
-// @Summary      Atualiza um balance
-// @Tags         balances
-// @Accept       json
-// @Produce      json
-// @Param        id      path      string                  true  "Balance ID"
-// @Param        balance body      dto.UpdateBalanceRequest true  "Balance"
-// @Success      200  {object}  dto.BalanceListDTO
-// @Failure      400  {object}  map[string]string "invalid request payload"
-// @Failure      404  {object}  map[string]string "record not found"
-// @Router       /v1/balances/{id} [put]
-func (h *balance) Update(ctx echo.Context) error {
-	id := ctx.Param("id")
-	if id == "" {
-		return echo.NewHTTPError(http.StatusBadRequest, "id cannot be empty")
-	}
-
-	var request dto.UpdateBalanceRequest
-	if err := ctx.Bind(&request); err != nil {
-		return echo.NewHTTPError(http.StatusBadRequest, err)
-	}
-
-	if err := request.Validate(); err != nil {
-		return echo.NewHTTPError(http.StatusBadRequest, err)
-	}
-
-	updatedBalance, err := h.balanceApp.Update(ctx.Request().Context(), id, request)
-	if err != nil {
-		switch {
-		case errors.Is(err, ierr.ErrNotFound):
-			return echo.NewHTTPError(http.StatusNotFound, err.Error())
-		default:
-			slog.Error("error updating balance", "error", err)
-			return echo.NewHTTPError(http.StatusInternalServerError, "an unexpected error occurred")
-		}
-	}
-
-	return ctx.JSON(http.StatusOK, updatedBalance)
-}
-
 // DeleteByID godoc
 // @Summary      Deleta um balance
 // @Tags         balances
 // @Produce      json
 // @Param        id   path      string  true  "Balance ID"
 // @Success      204  "No Content"
-// @Failure      404  {object}  map[string]string "record not found"
+// @Failure      404  {message}  map[string]string "record not found"
 // @Router       /v1/balances/{id} [delete]
 func (h *balance) DeleteByID(ctx echo.Context) error {
 	id := ctx.Param("id")

@@ -3,33 +3,33 @@ package repository
 import (
 	"time"
 
-	"github.com/mthpedrosa/financial-exchange-challenge/internal/account/domain/entity"
+	"github.com/mthpedrosa/financial-exchange-challenge/internal/order/domain/entity"
 )
 
-type AccountModel struct {
-	ID        string    `db:"id"`
-	Name      string    `db:"name"`
-	Email     string    `db:"email"`
-	CreatedAt time.Time `db:"created_at"`
-	UpdatedAt time.Time `db:"updated_at"`
+type OrderModel struct {
+	ID                string    `json:"id"`
+	AccountID         string    `json:"account_id"`
+	InstrumentID      string    `json:"instrument_id"`
+	Type              string    `json:"type"`
+	Status            string    `json:"status"`
+	Price             string    `json:"price"`
+	Quantity          string    `json:"quantity"`
+	RemainingQuantity string    `json:"remaining_quantity"`
+	CreatedAt         time.Time `json:"created_at"`
+	UpdatedAt         time.Time `json:"updated_at"`
 }
 
-func ToModel(account entity.Account) *AccountModel {
-	return &AccountModel{
-		ID:        account.ID,
-		Name:      account.Name,
-		Email:     account.Email,
-		CreatedAt: account.CreatedAt,
-		UpdatedAt: account.UpdatedAt,
-	}
-}
-
-func ToEntity(model AccountModel) entity.Account {
-	return entity.Account{
-		ID:        model.ID,
-		Name:      model.Name,
-		Email:     model.Email,
-		CreatedAt: model.CreatedAt,
-		UpdatedAt: model.UpdatedAt,
+func ToModel(entity entity.Order) *OrderModel {
+	return &OrderModel{
+		ID:                entity.ID,
+		AccountID:         entity.AccountID,
+		InstrumentID:      entity.InstrumentID,
+		Type:              string(entity.Type),
+		Status:            string(entity.Status),
+		Price:             entity.Price.String(),
+		Quantity:          entity.Quantity.String(),
+		RemainingQuantity: entity.RemainingQuantity.String(),
+		CreatedAt:         entity.CreatedAt,
+		UpdatedAt:         entity.UpdatedAt,
 	}
 }

@@ -14,11 +14,12 @@ import (
 )
 
 type Order interface {
-	Create(ctx context.Context, req dto.CreateOrderRequest) (dto.OrderDTO, error)
+	Create(ctx context.Context, req dto.CreateOrderRequest) (dto.CreateOrderResponse, error)
 	FindByID(ctx context.Context, id string) (dto.OrderDTO, error)
 	GetAll(ctx context.Context) ([]dto.OrderDTO, error)
 	Update(ctx context.Context, req dto.CreateOrderRequest) error
 	CancelByID(ctx context.Context, id string) error
+	FindByInstrument(ctx context.Context, id string) ([]dto.OrderDTO, error)
 }
 
 type orderApp struct {
@@ -45,27 +46,25 @@ func NewOrderApp(
 	}
 }
 
-func (a *orderApp) Create(ctx context.Context, req dto.CreateOrderRequest) (dto.OrderDTO, error) {
+func (a *orderApp) Create(ctx context.Context, req dto.CreateOrderRequest) (dto.CreateOrderResponse, error) {
 	orderEntity, err := entity.ToEntity(req)
 	if err != nil {
-		return dto.OrderDTO{}, err
+		return dto.CreateOrderResponse{}, err
 	}
 
 	// check if account exists
 	_, err = a.accountRepo.FindByID(ctx, orderEntity.AccountID)
 	if err != nil {
-		return dto.OrderDTO{}, errors.New("account not found")
+		return dto.CreateOrderResponse{}, errors.New("account not found")
 	}
 
 	// check if instrument exists
-	_, err = a.instrumentRepo.FindByID(ctx, orderEntity.InstrumentID)
+	instrument, err := a.instrumentRepo.FindByID(ctx, orderEntity.InstrumentID)
 	if err != nil {
-		return dto.OrderDTO{}, errors.New("instrument not found")
+		return dto.CreateOrderResponse{}, errors.New("instrument not found")
 	}
 
-	// Busca saldo da conta para o asset correto
-	// Para BUY: precisa de saldo em quote_asset, para SELL: precisa de saldo em base_asset
-	instrument, _ := a.instrumentRepo.FindByID(ctx, orderEntity.InstrumentID)
+	// check if account has sufficient balance for the order
 	var asset string
 	var requiredAmount *big.Float
 
@@ -79,27 +78,27 @@ func (a *orderApp) Create(ctx context.Context, req dto.CreateOrderRequest) (dto.
 
 	balance, err := a.balanceRepo.FindByAccountAndAsset(ctx, orderEntity.AccountID, asset)
 	if err != nil {
-		return dto.OrderDTO{}, errors.New("balance not found for required asset")
+		return dto.CreateOrderResponse{}, errors.New("balance not found for required asset")
 	}
 
 	if balance.Amount.Cmp(requiredAmount) < 0 {
-		return dto.OrderDTO{}, errors.New("insufficient balance")
+		return dto.CreateOrderResponse{}, errors.New("insufficient balance")
 	}
 
 	id, err := a.orderRepo.Create(ctx, *orderEntity)
 	if err != nil {
-		return dto.OrderDTO{}, err
+		return dto.CreateOrderResponse{}, err
 	}
 
 	orderEntity.ID = id
 
 	// send order to queue for processing
 	if err := a.orderQueue.PublishOrder(ctx, *orderEntity); err != nil {
-		return dto.OrderDTO{}, err
+		return dto.CreateOrderResponse{}, err
 	}
 
 	orderEntity.ID = id
-	return orderEntity.ToDTO(), nil
+	return dto.CreateOrderResponse{ID: id}, nil
 }
 
 // FindByID finds an order by its ID.
@@ -109,6 +108,14 @@ func (a *orderApp) FindByID(ctx context.Context, id string) (dto.OrderDTO, error
 		return dto.OrderDTO{}, err
 	}
 	return order.ToDTO(), nil
+}
+
+func (a *orderApp) FindByInstrument(ctx context.Context, id string) ([]dto.OrderDTO, error) {
+	orders, err := a.orderRepo.FindByInstrumentID(ctx, id)
+	if err != nil {
+		return []dto.OrderDTO{}, err
+	}
+	return entity.ToListDTO(orders), nil
 }
 
 // GetAll returns all orders.

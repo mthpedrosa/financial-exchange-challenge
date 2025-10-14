@@ -84,6 +84,11 @@ definitions:
     - base_asset
     - quote_asset
     type: object
+  github_com_mthpedrosa_financial-exchange-challenge_internal_instrument_domain_dto.CreateInstrumentResponse:
+    properties:
+      id:
+        type: string
+    type: object
   github_com_mthpedrosa_financial-exchange-challenge_internal_instrument_domain_dto.InstrumentDTO:
     properties:
       base_asset:
@@ -364,9 +369,7 @@ paths:
         "404":
           description: record not found
           schema:
-            additionalProperties:
-              type: string
-            type: object
+            type: message
       summary: Deleta um balance
       tags:
       - balances
@@ -519,7 +522,7 @@ paths:
         "201":
           description: Created
           schema:
-            $ref: '#/definitions/github_com_mthpedrosa_financial-exchange-challenge_internal_instrument_domain_dto.InstrumentDTO'
+            $ref: '#/definitions/github_com_mthpedrosa_financial-exchange-challenge_internal_instrument_domain_dto.CreateInstrumentResponse'
         "400":
           description: Bad Request
           schema:
@@ -749,6 +752,35 @@ paths:
               type: string
             type: object
       summary: Cancela uma ordem
+      tags:
+      - orders
+  /v1/orders/instrument/{instrumentID}:
+    get:
+      parameters:
+      - description: Instrument ID
+        in: path
+        name: instrument_id
+        required: true
+        type: string
+      - description: Asset
+        in: path
+        name: asset
+        required: true
+        type: string
+      produces:
+      - application/json
+      responses:
+        "200":
+          description: OK
+          schema:
+            items:
+              $ref: '#/definitions/github_com_mthpedrosa_financial-exchange-challenge_internal_order_domain_dto.OrderDTO'
+            type: array
+        "404":
+          description: instrumentID required
+          schema:
+            type: message
+      summary: Busca as orders por um Intrument
       tags:
       - orders
 swagger: "2.0"
