@@ -13,11 +13,11 @@ type BigFloat struct {
 }
 
 type CreateOrderRequest struct {
-	AccountID    string   `json:"account_id" validate:"required"`
-	InstrumentID string   `json:"instrument_id" validate:"required"`
-	Type         string   `json:"type" validate:"required,oneof=BUY SELL"`
-	Price        BigFloat `json:"price" validate:"required"`
-	Quantity     BigFloat `json:"quantity" validate:"required"`
+	AccountID    string    `json:"account_id" validate:"required"`
+	InstrumentID string    `json:"instrument_id" validate:"required"`
+	Type         string    `json:"type" validate:"required,oneof=BUY SELL"`
+	Price        *BigFloat `json:"price" validate:"required"`
+	Quantity     *BigFloat `json:"quantity" validate:"required"`
 }
 
 type CreateOrderResponse struct {

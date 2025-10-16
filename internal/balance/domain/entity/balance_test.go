@@ -9,6 +9,12 @@ import (
 	"github.com/stretchr/testify/assert"
 )
 
+// newBigFloat
+func newBigFloat(s string) *dto.BigFloat {
+	f, _, _ := big.ParseFloat(s, 10, 256, big.ToNearestEven)
+	return &dto.BigFloat{Float: f}
+}
+
 func TestToListDTO(t *testing.T) {
 	balances := []entity.Balance{
 		{
@@ -36,7 +42,7 @@ func TestToEntity_Valid(t *testing.T) {
 	req := dto.CreateBalanceRequest{
 		AccountID: "acc-uuid",
 		Asset:     "BTC",
-		Amount:    dto.BigFloat{big.NewFloat(123.45)},
+		Amount:    newBigFloat("123.45"),
 	}
 	b, err := entity.ToEntity(req)
 	assert.NoError(t, err)
@@ -54,7 +60,7 @@ func TestToEntity_Invalid(t *testing.T) {
 
 func TestToEntityUpdate_Valid(t *testing.T) {
 	req := dto.UpdateBalanceRequest{
-		Amount: *big.NewFloat(99.99),
+		Amount: newBigFloat("99.99").Float,
 	}
 	b, err := entity.ToEntityUpdate(req)
 	assert.NoError(t, err)

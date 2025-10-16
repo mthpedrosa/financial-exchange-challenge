@@ -24,9 +24,9 @@ type GetBalanceResponse struct {
 }
 
 type CreateBalanceRequest struct {
-	AccountID string   `json:"account_id" validate:"required"`
-	Asset     string   `json:"asset" validate:"required"`
-	Amount    BigFloat `json:"amount" validate:"required"`
+	AccountID string    `json:"account_id" validate:"required"`
+	Asset     string    `json:"asset" validate:"required"`
+	Amount    *BigFloat `json:"amount" validate:"required"`
 }
 
 type CreateBalanceResponse struct {
@@ -34,7 +34,7 @@ type CreateBalanceResponse struct {
 }
 
 type UpdateBalanceRequest struct {
-	Amount big.Float `json:"amount" validate:"required"`
+	Amount *big.Float `json:"amount" validate:"required"`
 }
 
 type BalanceListDTO struct {

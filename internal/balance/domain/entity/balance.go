@@ -47,6 +47,6 @@ func ToEntityUpdate(request dto.UpdateBalanceRequest) (*Balance, error) {
 	}
 
 	return &Balance{
-		Amount: &request.Amount,
+		Amount: request.Amount,
 	}, nil
 }
