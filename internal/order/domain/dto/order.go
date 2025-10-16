@@ -12,6 +12,36 @@ type BigFloat struct {
 	*big.Float
 }
 
+type CreateOrderRequest struct {
+	AccountID    string   `json:"account_id" validate:"required"`
+	InstrumentID string   `json:"instrument_id" validate:"required"`
+	Type         string   `json:"type" validate:"required,oneof=BUY SELL"`
+	Price        BigFloat `json:"price" validate:"required"`
+	Quantity     BigFloat `json:"quantity" validate:"required"`
+}
+
+type CreateOrderResponse struct {
+	ID string `json:"id"`
+}
+
+type OrderDTO struct {
+	ID                string    `json:"id"`
+	AccountID         string    `json:"account_id"`
+	InstrumentID      string    `json:"instrument_id"`
+	Type              string    `json:"type"`
+	Status            string    `json:"status"`
+	Price             big.Float `json:"price"`
+	Quantity          big.Float `json:"quantity"`
+	RemainingQuantity big.Float `json:"remaining_quantity"`
+	CreatedAt         time.Time `json:"created_at"`
+	UpdatedAt         time.Time `json:"updated_at"`
+}
+
+func (r *CreateOrderRequest) Validate() error {
+	validate := validator.New()
+	return validate.Struct(r)
+}
+
 func (b *BigFloat) UnmarshalJSON(data []byte) error {
 	var s string
 	if err := json.Unmarshal(data, &s); err == nil {
@@ -28,34 +58,4 @@ func (b *BigFloat) UnmarshalJSON(data []byte) error {
 	}
 	b.Float = big.NewFloat(f)
 	return nil
-}
-
-type CreateOrderRequest struct {
-	AccountID    string   `json:"account_id" validate:"required"`
-	InstrumentID string   `json:"instrument_id" validate:"required"`
-	Type         string   `json:"type" validate:"required,oneof=BUY SELL"`
-	Price        BigFloat `json:"price" validate:"required"`
-	Quantity     BigFloat `json:"quantity" validate:"required"`
-}
-
-type CreateOrderResponse struct {
-	ID string `json:"id"`
-}
-
-func (r *CreateOrderRequest) Validate() error {
-	validate := validator.New()
-	return validate.Struct(r)
-}
-
-type OrderDTO struct {
-	ID                string    `json:"id"`
-	AccountID         string    `json:"account_id"`
-	InstrumentID      string    `json:"instrument_id"`
-	Type              string    `json:"type"`
-	Status            string    `json:"status"`
-	Price             big.Float `json:"price"`
-	Quantity          big.Float `json:"quantity"`
-	RemainingQuantity big.Float `json:"remaining_quantity"`
-	CreatedAt         time.Time `json:"created_at"`
-	UpdatedAt         time.Time `json:"updated_at"`
 }

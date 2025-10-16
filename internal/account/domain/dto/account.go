@@ -15,18 +15,18 @@ type AccountDTO struct {
 }
 
 type AccountListDTO struct {
-	ID   string
-	Name string
+	ID   string `json:"id"`
+	Name string `json:"name"`
 }
 
 type CreateAccountRequest struct {
-	Name  string `json:"name" binding:"required"`
-	Email string `json:"email" binding:"required,email"`
+	Name  string `json:"name" validate:"required"`
+	Email string `json:"email" validate:"required,email"`
 }
 
 type UpdateAccountRequest struct {
-	Name  string `json:"name" binding:"required"`
-	Email string `json:"email" binding:"required,email"`
+	Name  string `json:"name" validate:"required"`
+	Email string `json:"email" validate:"required,email"`
 }
 
 type AccountFilter struct {

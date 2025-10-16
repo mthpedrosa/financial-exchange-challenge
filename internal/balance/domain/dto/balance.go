@@ -24,9 +24,9 @@ type GetBalanceResponse struct {
 }
 
 type CreateBalanceRequest struct {
-	AccountID string   `json:"account_id"`
-	Asset     string   `json:"asset"`
-	Amount    BigFloat `json:"amount"`
+	AccountID string   `json:"account_id" validate:"required"`
+	Asset     string   `json:"asset" validate:"required"`
+	Amount    BigFloat `json:"amount" validate:"required"`
 }
 
 type CreateBalanceResponse struct {
@@ -34,7 +34,7 @@ type CreateBalanceResponse struct {
 }
 
 type UpdateBalanceRequest struct {
-	Amount big.Float `json:"amount"`
+	Amount big.Float `json:"amount" validate:"required"`
 }
 
 type BalanceListDTO struct {
@@ -68,7 +68,7 @@ func (b *BigFloat) UnmarshalJSON(data []byte) error {
 		b.Float = f
 		return nil
 	}
-	// tenta como número
+
 	var f float64
 	if err := json.Unmarshal(data, &f); err != nil {
 		return err
