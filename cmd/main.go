@@ -157,6 +157,12 @@ func main() {
 func setupServer(cfg config.Config, accountHandler accountHandler.Account, instrumentHandler instrumentHandler.Instrument, balanceHandler balanceHandler.Balance, orderHandler orderHandler.Order) *echo.Echo {
 	server := echo.New()
 
+	// cors
+	server.Use(middleware.CORSWithConfig(middleware.CORSConfig{
+		AllowOrigins: []string{"*"},
+		AllowMethods: []string{http.MethodGet, http.MethodPut, http.MethodPost, http.MethodDelete},
+	}))
+
 	// middlewares
 	server.Use(middleware.Logger())
 	server.Use(middleware.Recover())
