@@ -48,7 +48,7 @@ func (r *instrument) Update(ctx context.Context, instrument *entity.Instrument) 
 
 	// check if any row was affected
 	if result.RowsAffected() == 0 {
-		return fmt.Errorf("no account found with id: %d", model.ID)
+		return fmt.Errorf("no account found with id: %s", model.ID)
 	}
 
 	return nil
@@ -80,18 +80,17 @@ func (r *instrument) FindAll(ctx context.Context, filter *entity.InstrumentFilte
 	queryBuilder.WriteString("SELECT id, base_asset, quote_asset, created_at, updated_at FROM instruments WHERE 1=1")
 
 	args := []interface{}{}
-	argId := 1
+	argID := 1
 
 	// dynamic filters
 	if filter.BaseAsset != "" {
-		queryBuilder.WriteString(fmt.Sprintf(" AND base_asset = $%d", argId))
+		queryBuilder.WriteString(fmt.Sprintf(" AND base_asset = $%d", argID))
 		args = append(args, filter.BaseAsset)
-		argId++
+		argID++
 	}
 	if filter.QuoteAsset != "" {
-		queryBuilder.WriteString(fmt.Sprintf(" AND quote_asset = $%d", argId))
+		queryBuilder.WriteString(fmt.Sprintf(" AND quote_asset = $%d", argID))
 		args = append(args, filter.QuoteAsset)
-		argId++
 	}
 
 	query := queryBuilder.String()
@@ -132,7 +131,7 @@ func (r *instrument) DeleteByID(ctx context.Context, id string) error {
 
 	// check if any row was affected
 	if result.RowsAffected() == 0 {
-		return fmt.Errorf("no account found with id: %d", id)
+		return fmt.Errorf("no account found with id: %s", id)
 	}
 
 	return nil

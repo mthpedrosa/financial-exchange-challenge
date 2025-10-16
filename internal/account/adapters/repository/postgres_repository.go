@@ -89,7 +89,6 @@ func (r *account) GetAccounts(ctx context.Context, filters entity.AccountFilter)
 	if filters.Email != "" {
 		conditions = append(conditions, fmt.Sprintf("email = $%d", argID))
 		args = append(args, filters.Email)
-		argID++
 	}
 
 	if len(conditions) > 0 {
